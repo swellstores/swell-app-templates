@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "swell-vinext",
+  "main": "vinext/server/fetch-handler",
+  "compatibility_date": "2026-09-08",
+  "compatibility_flags": [],
+  "assets": {
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none",
+    "run_worker_first": false
+  },
+  "observability": {
+    "enabled": false
+  },
+  "upload_source_maps": false,
+  "cache": {
+    "enabled": true
+  },
+  "version_metadata": {
+    "binding": "CF_VERSION_METADATA"
+  }
+}

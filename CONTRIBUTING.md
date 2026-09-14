@@ -40,4 +40,4 @@ The storefront check builds the empty starter, then composes a temporary page us
 
 ## Maintenance
 
-Review Cloudflare/C3, framework and dependency updates weekly. Aim for monthly routine updates; expedite security and compatibility fixes. For managed templates, update exact dependencies and lockfiles together with the finalizer's expected versions; `npm run verify` fails if the finalizer and the manifest disagree. Run template checks on pull requests and complete fresh-scaffold and deployment qualification before release.
+Review Cloudflare/C3, framework and dependency updates weekly. Aim for monthly routine updates; expedite security and compatibility fixes. For managed templates, update exact dependencies and lockfiles, then run `npm run sync` from the repository root: each finalizer restores `scripts/managed-manifest.json` and `scripts/managed-wrangler.jsonc`, which are copies of the template's committed `package.json` and `wrangler.jsonc`. `npm run verify` fails while those snapshots are stale. Run template checks on pull requests and complete fresh-scaffold and deployment qualification before release.

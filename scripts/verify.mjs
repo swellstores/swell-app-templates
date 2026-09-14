@@ -57,11 +57,11 @@ for (const name of templates) {
     manifest.devDependencies['@types/node'] = '0.0.0-c3';
     await fs.writeFile(manifestPath, JSON.stringify(manifest));
     await run(['run', 'prepare:managed'], cwd);
-    assert.equal(await fs.readFile(configFile, 'utf8'), expected, 'managed settings must be restored after C3');
+    assert.equal(await fs.readFile(configFile, 'utf8'), expected, 'managed settings must be restored after C3; run npm run sync');
     const finalized = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
     assert(!finalized.scripts.deploy);
     for (const key of ['scripts', 'dependencies', 'devDependencies']) {
-      assert.deepEqual(finalized[key], committed[key], `finalizer must restore the committed ${key}`);
+      assert.deepEqual(finalized[key], committed[key], `finalizer must restore the committed ${key}; run npm run sync`);
     }
     for (const script of ['cf-typegen', 'typecheck', 'lint', 'test', 'build']) await run(['run', script], cwd);
     if (name === 'react-storefront') {

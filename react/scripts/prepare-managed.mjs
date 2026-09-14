@@ -1,59 +1,20 @@
-import fs from 'node:fs/promises';
+import fs from "node:fs/promises";
 
-const root = new URL('../', import.meta.url);
-const manifest = JSON.parse(await fs.readFile(new URL('package.json', root), 'utf8'));
-const expected = {
-  "dependencies": {
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "swell-js": "5.8.1"
-  },
-  "devDependencies": {
-    "@cloudflare/vite-plugin": "1.54.9",
-    "@types/node": "24.13.4",
-    "@types/react": "19.3.0",
-    "@types/react-dom": "19.3.0",
-    "@vitejs/plugin-react": "6.1.1",
-    "typescript": "6.0.3",
-    "vite": "8.3.0",
-    "wrangler": "4.131.2",
-    "eslint": "10.10.0",
-    "typescript-eslint": "8.70.0"
-  }
-};
-// C3 rewrites some of these declarations while scaffolding; restore the pinned set.
-for (const [group, packages] of Object.entries(expected)) {
-  manifest[group] = { ...manifest[group], ...packages };
+// Restore the managed settings and pinned declarations that C3 rewrites while
+// scaffolding. The snapshots beside this script are copies of the template's
+// committed package.json and wrangler.jsonc; refresh them with `npm run sync`
+// from the repository root after changing either file.
+const scripts = new URL("./", import.meta.url);
+const root = new URL("../", scripts);
+
+const manifestPath = new URL("package.json", root);
+const manifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
+const pinned = JSON.parse(await fs.readFile(new URL("managed-manifest.json", scripts), "utf8"));
+for (const group of ["scripts", "dependencies", "devDependencies"]) {
+  manifest[group] = { ...manifest[group], ...pinned[group] };
 }
-const config = {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "swell-react",
-  "main": "worker/index.ts",
-  "compatibility_date": "2026-09-08",
-  "compatibility_flags": [],
-  "assets": {
-    "binding": "ASSETS",
-    "html_handling": "none",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": true
-  },
-  "observability": {
-    "enabled": false
-  },
-  "upload_source_maps": false
-};
-await fs.writeFile(new URL('wrangler.jsonc', root), JSON.stringify(config, null, 2) + '\n');
-
 // C3 may add a direct Cloudflare deploy command; managed apps deploy through Swell.
-manifest.scripts = { ...manifest.scripts, ...{
-  "dev": "vite",
-  "build": "tsc -b && vite build",
-  "lint": "eslint .",
-  "preview": "npm run build && vite preview",
-  "cf-typegen": "wrangler types",
-  "typecheck": "tsc -b",
-  "prepare:managed": "node scripts/prepare-managed.mjs",
-  "test": "node --experimental-strip-types --test test/*.test.mjs"
-} };
 delete manifest.scripts.deploy;
-await fs.writeFile(new URL('package.json', root), JSON.stringify(manifest, null, 2) + '\n');
+await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
+
+await fs.copyFile(new URL("managed-wrangler.jsonc", scripts), new URL("wrangler.jsonc", root));
