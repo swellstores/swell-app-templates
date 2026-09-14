@@ -63,7 +63,6 @@ const docsByDir = new Map<string, DirectoryDoc>();
 const publicExportsByRoot = new Map<string, Set<string> | null>();
 
 for (const sourceRoot of SOURCE_ROOTS) {
-  ensureDirectoryDoc(".");
   publicExportsByRoot.set(sourceRoot, getPublicExports(sourceRoot));
 
   const parts = sourceRoot.split("/");
@@ -105,12 +104,7 @@ for (const dir of [...docsByDir.keys()]) {
 const changed: string[] = [];
 
 for (const doc of [...docsByDir.values()].sort((a, b) => a.dir.localeCompare(b.dir))) {
-  if (
-    doc.exports.length === 0 &&
-    doc.children.length === 0 &&
-    doc.files.length === 0 &&
-    doc.dir !== "."
-  ) {
+  if (doc.exports.length === 0 && doc.children.length === 0 && doc.files.length === 0) {
     continue;
   }
 
@@ -541,23 +535,8 @@ function getSymbol(node: ts.Node): ts.Symbol | undefined {
 
 function renderDirectoryDoc(doc: DirectoryDoc): string {
   const lines: string[] = [];
-  lines.push(`# ${doc.dir === "." ? "react-storefront" : doc.dir}`);
+  lines.push(`# ${doc.dir}`);
   lines.push("");
-  if (doc.dir === ".") {
-    lines.push(
-      "This template is for client-only, AI-generated storefronts on Swell managed hosting.",
-    );
-    lines.push(
-      "All commerce operations use the browser hooks backed by `swell-js`. Do not add SSR, server actions, Backend API credentials or an `/app-api` layer.",
-    );
-    lines.push(
-      "The Worker is infrastructure for assets and public `window.__SWELL__` configuration only. Preserve it while authoring pages and sections.",
-    );
-    lines.push(
-      "See [AGENTS.md](AGENTS.md) for managed build constraints and [README.md](README.md) for setup.",
-    );
-    lines.push("");
-  }
 
   const importPath = getImportPath(doc.dir);
   if (importPath) {
@@ -572,10 +551,7 @@ function renderDirectoryDoc(doc: DirectoryDoc): string {
     for (const child of children) {
       const childDoc = docsByDir.get(child);
       const label = child.split("/").at(-1) ?? child;
-      const href =
-        doc.dir === "."
-          ? `${child}/${DOC_FILE_NAME}`
-          : `${path.posix.relative(doc.dir, child)}/${DOC_FILE_NAME}`;
+      const href = `${path.posix.relative(doc.dir, child)}/${DOC_FILE_NAME}`;
       const summary =
         childDoc && shouldRenderChildSummary(doc.dir) ? renderChildSummary(childDoc) : "";
       lines.push(`- [${label}](${href})${summary ? `: ${summary}` : ""}`);
@@ -682,7 +658,7 @@ function ensureDirectoryDoc(dir: string): DirectoryDoc {
   docsByDir.set(normalized, next);
 
   const parent = path.posix.dirname(normalized);
-  if (parent !== normalized) ensureDirectoryDoc(parent);
+  if (parent !== normalized && parent !== ".") ensureDirectoryDoc(parent);
 
   return next;
 }
