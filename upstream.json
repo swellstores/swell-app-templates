@@ -1,0 +1,19 @@
+{
+  "createCloudflare": "2.72.7",
+  "react": {
+    "source": "https://developers.cloudflare.com/workers/framework-guides/web-apps/react/",
+    "createVite": "9.2.0",
+    "variant": "react-ts",
+    "generatedProjectName": "swell-m6-react-c3",
+    "command": "npm create cloudflare@2.72.7 -- swell-m6-react-c3 --category=web-framework --framework=react --variant=react-ts --deploy=false --git=false --no-agents --no-auto-update"
+  },
+  "vinext": {
+    "source": "https://github.com/cloudflare/vinext",
+    "createVinextApp": "1.0.0-beta.2",
+    "variant": "vinext",
+    "platform": "cloudflare",
+    "generatedProjectName": "swell-m6-vinext-c3",
+    "command": "npm create cloudflare@2.72.7 -- swell-m6-vinext-c3 --category=web-framework --framework=next --variant=vinext --deploy=false --git=false --no-agents --no-auto-update"
+  },
+  "generatedOn": "2026-09-14"
+}
