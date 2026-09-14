@@ -12,9 +12,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(appRoot, "src"),
-      react: path.resolve(appRoot, "node_modules/react"),
-      "react-dom": path.resolve(appRoot, "node_modules/react-dom"),
-      "react-router-dom": path.resolve(appRoot, "node_modules/react-router-dom"),
     },
     dedupe: [
       "react",

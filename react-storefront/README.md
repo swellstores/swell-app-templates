@@ -6,6 +6,31 @@ A client-only React + Vite starter for AI-generated Swell storefronts, with Reac
 
 **This is a starter library, not a finished storefront.** `src/App.tsx` contains an empty route tree. Add pages and routes before expecting a visible storefront.
 
+## CLI scaffolding preview
+
+With the development Swell CLI that includes the managed template choices:
+
+```sh
+swell create app my-store -t storefront --frontend swell-spa -y
+cd my-store
+swell app frontend dev
+# Deploy with a compatible managed-hosting platform:
+swell app push
+```
+
+The CLI automatically finalizes the template, sets `frontend.hosting: managed`
+in the parent `swell.json`, installs dependencies and generates Worker types.
+Choose a package manager with `--pkg npm|yarn|pnpm|bun`. For an existing app, run
+`swell create frontend --frontend swell-spa -y` from its directory.
+
+`create app` also provisions a development app and storefront in your test store;
+`create frontend` only adds the local frontend. The starter has no pages until
+you author them. No self-hosted SPA preset is currently supported.
+
+These commands require the development CLI; released CLI support and live
+deployment/tunnel qualification are still pending. The standalone setup below
+is for working directly on a copy of this template.
+
 ## Local setup
 
 Use Node.js 22.22.2 (see `.nvmrc`) and Bun 1.3.14. From this directory:
@@ -17,7 +42,7 @@ bun run cf-typegen
 bun run dev
 ```
 
-`prepare:managed` restores the managed Wrangler settings and scripts after C3 and checks the pinned dependency declarations. Keep the compatibility date aligned with the supported `2026-09-08` profile.
+`prepare:managed` restores the managed Wrangler settings, scripts and pinned dependency declarations after C3 changes them. Keep the compatibility date aligned with the supported `2026-09-08` profile.
 
 The development server uses port 3000 by default; set `PORT` to choose another port. Hot module replacement is disabled in the existing Vite configuration, so refresh the browser after edits.
 

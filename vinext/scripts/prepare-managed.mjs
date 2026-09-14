@@ -27,12 +27,9 @@ const expected = {
     "typescript-eslint": "8.70.0"
   }
 };
+// C3 rewrites some of these declarations while scaffolding; restore the pinned set.
 for (const [group, packages] of Object.entries(expected)) {
-  for (const [name, version] of Object.entries(packages)) {
-    if (manifest[group]?.[name] !== version) {
-      throw new Error(`Managed template requires ${name}@${version}; received ${manifest[group]?.[name]}`);
-    }
-  }
+  manifest[group] = { ...manifest[group], ...packages };
 }
 const config = {
   "$schema": "node_modules/wrangler/config-schema.json",

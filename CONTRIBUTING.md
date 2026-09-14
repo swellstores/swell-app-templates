@@ -30,7 +30,7 @@ After publishing a candidate revision, substitute its commit SHA for `<COMMIT>`:
 npm create cloudflare@2.72.7 -- frontend --template=swellstores/swell-app-templates/react#<COMMIT> --deploy=false --git=false --no-agents --no-auto-update
 ```
 
-Replace `react` with `vinext` or `react-storefront` to qualify another template. Use Bun for the storefront install and scripts as described in its README. In the generated directory, run `npm run prepare:managed` before installing dependencies and generating types. Follow the template README for the remaining checks. C3 changes configuration and scripts; the finalizer restores managed settings and validates dependency declarations.
+Replace `react` with `vinext` or `react-storefront` to qualify another template. Use Bun for the storefront install and scripts as described in its README. In the generated directory, run `npm run prepare:managed` before installing dependencies and generating types. Follow the template README for the remaining checks. C3 changes configuration, scripts and some dependency versions; the finalizer restores the managed settings and the pinned declarations.
 
 This remote-scaffold procedure still needs verification at a published candidate revision. Before releasing managed templates, verify fresh scaffolds with supported Node/package-manager versions, Swell CLI creation and finalization, dev/tunnels, and deployment through Swell to untrusted Workers for Platforms. Exercise real sessions and browser data access. Managed setup must not require a developer Cloudflare account. Record the tested template commit, tool versions, results and limitations, then update the CLI's template reference.
 
@@ -40,4 +40,4 @@ The storefront check builds the empty starter, then composes a temporary page us
 
 ## Maintenance
 
-Review Cloudflare/C3, framework and dependency updates weekly. Aim for monthly routine updates; expedite security and compatibility fixes. For managed templates, update exact dependencies and lockfiles together with the finalizer's expected versions. Run template checks on pull requests and complete fresh-scaffold and deployment qualification before release.
+Review Cloudflare/C3, framework and dependency updates weekly. Aim for monthly routine updates; expedite security and compatibility fixes. For managed templates, update exact dependencies and lockfiles together with the finalizer's expected versions; `npm run verify` fails if the finalizer and the manifest disagree. Run template checks on pull requests and complete fresh-scaffold and deployment qualification before release.

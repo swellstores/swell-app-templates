@@ -60,14 +60,9 @@ const expected = {
     wrangler: "4.131.2",
   },
 };
+// C3 rewrites some of these declarations while scaffolding; restore the pinned set.
 for (const [group, packages] of Object.entries(expected)) {
-  for (const [name, version] of Object.entries(packages)) {
-    if (manifest[group]?.[name] !== version) {
-      throw new Error(
-        `Managed template requires ${name}@${version}; received ${manifest[group]?.[name]}`,
-      );
-    }
-  }
+  manifest[group] = { ...manifest[group], ...packages };
 }
 const config = {
   $schema: "node_modules/wrangler/config-schema.json",
@@ -96,10 +91,10 @@ manifest.scripts = {
     build: "tsc -b && vite build",
     typecheck: "tsc -b",
     lint: "eslint --cache -f json --quiet .",
-    preview: "bun run build && vite preview --host 0.0.0.0 --port ${PORT:-4173}",
+    preview: "tsc -b && vite build && vite preview --host 0.0.0.0 --port ${PORT:-4173}",
     "cf-typegen": "wrangler types",
-    "claude:generate": "bun scripts/generate-claude-docs.ts",
-    "claude:check": "bun scripts/generate-claude-docs.ts --check",
+    "claude:generate": "node --experimental-strip-types scripts/generate-claude-docs.ts",
+    "claude:check": "node --experimental-strip-types scripts/generate-claude-docs.ts --check",
     format: "prettier --write .",
     "format:check": "prettier --check .",
     "prepare:managed": "node scripts/prepare-managed.mjs",

@@ -4,6 +4,27 @@ A Swell app frontend based on Cloudflare's scaffold, with an application Worker 
 
 **Preview:** released Swell CLI integration and end-to-end deployment verification are pending. Local build and browser checks have passed with mocked platform responses; dev/tunnel context and real Swell sessions still need verification.
 
+## CLI scaffolding preview
+
+With the development Swell CLI that includes the managed template choices:
+
+```sh
+swell create app my-app -t admin --frontend swell-react -y
+cd my-app
+swell app frontend dev
+# Deploy with a compatible managed-hosting platform:
+swell app push
+```
+
+The CLI automatically finalizes the template, sets `frontend.hosting: managed`
+in the parent `swell.json`, installs dependencies and generates Worker types.
+Choose a package manager with `--pkg npm|yarn|pnpm|bun`. For an existing app, run
+`swell create frontend --frontend swell-react -y` from its directory.
+
+These commands require the development CLI; released CLI support and live
+deployment/tunnel qualification are still pending. The standalone setup below
+is for working directly on a copy of this template.
+
 ## Local evaluation
 
 Use Node.js 22.22.2 and npm. Copy this directory to your working location and run the following commands from that directory:
@@ -18,7 +39,7 @@ npm test
 npm run build
 ```
 
-`prepare:managed` checks the pinned dependency declarations and restores the supported Wrangler profile after C3 changes it. Run it immediately after scaffolding, before generating types or building. It does not run on Swell's servers. The template targets compatibility date `2026-09-08`; keep it aligned with the managed platform profile.
+`prepare:managed` restores the pinned dependency declarations and the supported Wrangler profile after C3 changes them. Run it immediately after scaffolding, before generating types or building. It does not run on Swell's servers. The template targets compatibility date `2026-09-08`; keep it aligned with the managed platform profile.
 
 Run `npm run dev` to start the local development server. Without Swell request context, the catalog cannot load platform data and `/app-api/context` returns an unavailable-context response. The public `/app-api/hello` endpoint can be exercised locally.
 

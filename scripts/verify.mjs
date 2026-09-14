@@ -50,12 +50,19 @@ for (const name of templates) {
     changed.images = { binding: 'IMAGES' };
     await fs.writeFile(configFile, JSON.stringify(changed));
     const manifestPath = path.join(cwd, 'package.json');
-    const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
+    const committed = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
+    const manifest = JSON.parse(JSON.stringify(committed));
     manifest.scripts.deploy = 'wrangler deploy';
+    manifest.devDependencies.wrangler = '0.0.0-c3';
+    manifest.devDependencies['@types/node'] = '0.0.0-c3';
     await fs.writeFile(manifestPath, JSON.stringify(manifest));
     await run(['run', 'prepare:managed'], cwd);
     assert.equal(await fs.readFile(configFile, 'utf8'), expected, 'managed settings must be restored after C3');
-    assert(!JSON.parse(await fs.readFile(manifestPath, 'utf8')).scripts.deploy);
+    const finalized = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
+    assert(!finalized.scripts.deploy);
+    for (const key of ['scripts', 'dependencies', 'devDependencies']) {
+      assert.deepEqual(finalized[key], committed[key], `finalizer must restore the committed ${key}`);
+    }
     for (const script of ['cf-typegen', 'typecheck', 'lint', 'test', 'build']) await run(['run', script], cwd);
     if (name === 'react-storefront') {
       await run(['run', 'claude:check'], cwd);

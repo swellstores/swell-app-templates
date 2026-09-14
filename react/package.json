@@ -36,7 +36,8 @@
   "swell": {
     "frontend": {
       "hosting": "managed",
-      "framework": "react"
+      "framework": "react",
+      "template": "swell-react"
     }
   }
 }

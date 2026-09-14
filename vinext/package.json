@@ -43,7 +43,8 @@
   "swell": {
     "frontend": {
       "hosting": "managed",
-      "framework": "vinext"
+      "framework": "vinext",
+      "template": "swell-vinext"
     }
   }
 }

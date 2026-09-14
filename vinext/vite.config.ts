@@ -15,4 +15,8 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    // Swell CLI tunnels reach the dev server through these hosts.
+    allowedHosts: [".trycloudflare.com", ".swell.store", ".swell.test"],
+  },
 });
