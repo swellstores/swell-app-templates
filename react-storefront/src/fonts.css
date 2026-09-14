@@ -1,0 +1,10 @@
+/*
+ * Controlled storefront font catalog.
+ *
+ * Keep only the font families selected by the storefront theme. Every import
+ * must correspond to an installed entry from fonts.ts. Do not add remote font
+ * URLs or font packages during storefront generation.
+ */
+
+@import "@fontsource-variable/inter/wght.css";
+@import "@fontsource-variable/jetbrains-mono/wght.css";

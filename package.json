@@ -1,0 +1,14 @@
+{
+  "name": "swell-app-templates",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "verify": "node scripts/verify.mjs"
+  },
+  "engines": {
+    "node": ">=22.22.2"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

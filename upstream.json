@@ -4,16 +4,21 @@
     "source": "https://developers.cloudflare.com/workers/framework-guides/web-apps/react/",
     "createVite": "9.2.0",
     "variant": "react-ts",
-    "generatedProjectName": "swell-m6-react-c3",
-    "command": "npm create cloudflare@2.72.7 -- swell-m6-react-c3 --category=web-framework --framework=react --variant=react-ts --deploy=false --git=false --no-agents --no-auto-update"
+    "scaffoldCommand": "npm create cloudflare@2.72.7 -- frontend --category=web-framework --framework=react --variant=react-ts --deploy=false --git=false --no-agents --no-auto-update"
   },
   "vinext": {
     "source": "https://github.com/cloudflare/vinext",
     "createVinextApp": "1.0.0-beta.2",
     "variant": "vinext",
     "platform": "cloudflare",
-    "generatedProjectName": "swell-m6-vinext-c3",
-    "command": "npm create cloudflare@2.72.7 -- swell-m6-vinext-c3 --category=web-framework --framework=next --variant=vinext --deploy=false --git=false --no-agents --no-auto-update"
+    "scaffoldCommand": "npm create cloudflare@2.72.7 -- frontend --category=web-framework --framework=next --variant=vinext --deploy=false --git=false --no-agents --no-auto-update"
   },
-  "generatedOn": "2026-09-14"
+  "generatedOn": "2026-09-14",
+  "qualifiedCompatibilityDate": "2026-09-08",
+  "templateRevision": null,
+  "react-storefront": {
+    "source": "https://github.com/swellstores/storefront-react-ai-template",
+    "branch": "main",
+    "revision": "90d72c9a6582c15704a57b531d4c0709795a4df6"
+  }
 }
