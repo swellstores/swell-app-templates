@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "dependencies": {
     "@vinext/cloudflare": "1.0.0-beta.7",
@@ -39,12 +39,5 @@
   },
   "engines": {
     "node": ">=22.22.2"
-  },
-  "swell": {
-    "frontend": {
-      "hosting": "managed",
-      "framework": "vinext",
-      "template": "swell-vinext"
-    }
   }
 }

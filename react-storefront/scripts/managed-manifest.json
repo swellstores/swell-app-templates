@@ -1,7 +1,7 @@
 {
   "name": "react-storefront",
   "private": true,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "scripts": {
     "dev": "NODE_OPTIONS=--max-http-header-size=65536 vite --host 0.0.0.0 --port ${PORT:-3000}",
@@ -75,12 +75,5 @@
   },
   "engines": {
     "node": ">=22.22.2"
-  },
-  "swell": {
-    "frontend": {
-      "hosting": "managed",
-      "framework": "react",
-      "template": "swell-spa"
-    }
   }
 }

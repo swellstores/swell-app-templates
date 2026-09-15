@@ -1,6 +1,6 @@
 # Swell managed frontend
 
-Build locally with the pinned dependencies. Run `npm run prepare:managed`, `npm run cf-typegen`, `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build` after changes. Deploy through `swell app push` from the parent Swell app; do not deploy directly to Cloudflare.
+Build locally with the pinned dependencies. Run `npm run cf-typegen`, `npm run typecheck`, `npm run lint`, `npm test`, and `npm run build` after changes. Deploy through `swell app push` from the parent Swell app; do not deploy directly to Cloudflare.
 
 - Use `swell-js` for normal platform data exchange. Initialize from `/app-api/context` at request time, never build-time store values.
 - Swell owns `/api`, `/functions`, GraphQL and existing platform routes. Frontend HTTP endpoints belong under `/app-api`; do not rewrite their public paths.

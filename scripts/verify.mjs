@@ -50,18 +50,31 @@ for (const name of templates) {
     changed.images = { binding: 'IMAGES' };
     await fs.writeFile(configFile, JSON.stringify(changed));
     const manifestPath = path.join(cwd, 'package.json');
-    const committed = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
-    const manifest = JSON.parse(JSON.stringify(committed));
+    const expectedManifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
+    const manifest = structuredClone(expectedManifest);
+    delete expectedManifest.scripts['prepare:managed'];
+    const scriptsPath = path.join(cwd, 'scripts');
+    const setupFiles = ['prepare-managed.mjs', 'managed-manifest.json', 'managed-wrangler.jsonc'];
+    const remainingScripts = (await fs.readdir(scriptsPath)).filter((file) => !setupFiles.includes(file)).sort();
+    const remainingContents = await Promise.all(remainingScripts.map((file) => fs.readFile(path.join(scriptsPath, file))));
+    manifest.name = 'frontend';
     manifest.scripts.deploy = 'wrangler deploy';
     manifest.devDependencies.wrangler = '0.0.0-c3';
     manifest.devDependencies['@types/node'] = '0.0.0-c3';
     await fs.writeFile(manifestPath, JSON.stringify(manifest));
     await run(['run', 'prepare:managed'], cwd);
     assert.equal(await fs.readFile(configFile, 'utf8'), expected, 'managed settings must be restored after C3; run npm run sync');
-    const finalized = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
-    assert(!finalized.scripts.deploy);
-    for (const key of ['scripts', 'dependencies', 'devDependencies']) {
-      assert.deepEqual(finalized[key], committed[key], `finalizer must restore the committed ${key}; run npm run sync`);
+    assert.deepEqual(JSON.parse(await fs.readFile(manifestPath, 'utf8')), expectedManifest, 'finalizer must restore package.json without prepare:managed; run npm run sync');
+    for (const file of setupFiles) {
+      await assert.rejects(fs.access(path.join(scriptsPath, file)), { code: 'ENOENT' });
+    }
+    if (remainingScripts.length === 0) {
+      await assert.rejects(fs.access(scriptsPath), { code: 'ENOENT' });
+    } else {
+      assert.deepEqual((await fs.readdir(scriptsPath)).sort(), remainingScripts);
+      for (const [index, file] of remainingScripts.entries()) {
+        assert.deepEqual(await fs.readFile(path.join(scriptsPath, file)), remainingContents[index]);
+      }
     }
     for (const script of ['cf-typegen', 'typecheck', 'lint', 'test', 'build']) await run(['run', script], cwd);
     if (name === 'react-storefront') {

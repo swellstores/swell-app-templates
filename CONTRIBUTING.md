@@ -24,15 +24,15 @@ The checks copy the template to an isolated directory, install its lockfile, sim
 
 ## Fresh scaffold qualification
 
-After publishing a candidate revision, substitute its commit SHA for `<COMMIT>`:
+The Swell CLI scaffolds from the moving `v0.1` compatibility tag of this repository. degit resolves only branch and tag tips, never arbitrary commits, so qualify a candidate from a pushed branch before moving the tag:
 
 ```sh
-npm create cloudflare@2.72.7 -- frontend --template=swellstores/swell-app-templates/react#<COMMIT> --deploy=false --git=false --no-agents --no-auto-update
+npm create cloudflare@2.72.7 -- frontend --template=swellstores/swell-app-templates/react#<BRANCH> --deploy=false --git=false --no-agents --no-auto-update
 ```
 
-Replace `react` with `vinext` or `react-storefront` to qualify another template. Use Bun for the storefront install and scripts as described in its README. In the generated directory, run `npm run prepare:managed` before installing dependencies and generating types. Follow the template README for the remaining checks. C3 changes configuration, scripts and some dependency versions; the finalizer restores the managed settings and the pinned declarations.
+Replace `react` with `vinext` or `react-storefront` to qualify another template. Use Bun for the storefront install and scripts as described in its README. In the generated directory, run `npm run prepare:managed` once before installing dependencies and generating types. C3 changes configuration, scripts and some dependency versions; the finalizer restores the committed manifest, including the template's package name, and restores `wrangler.jsonc` byte for byte. It then removes `prepare:managed` from the manifest and deletes itself and both snapshots, removing `scripts/` only if empty. The Swell CLI already performs this step during scaffolding. Follow the template README for the remaining checks.
 
-This remote-scaffold procedure still needs verification at a published candidate revision. Before releasing managed templates, verify fresh scaffolds with supported Node/package-manager versions, Swell CLI creation and finalization, dev/tunnels, and deployment through Swell to untrusted Workers for Platforms. Exercise real sessions and browser data access. Managed setup must not require a developer Cloudflare account. Record the tested template commit, tool versions, results and limitations, then update the CLI's template reference.
+Before releasing managed templates, verify fresh scaffolds with supported Node/package-manager versions, Swell CLI creation and finalization, dev/tunnels, and deployment through Swell to untrusted Workers for Platforms. Exercise real sessions and browser data access. Managed setup must not require a developer Cloudflare account. Record the tested template revision, tool versions, results and limitations.
 
 ## Storefront template verification
 
@@ -40,4 +40,14 @@ The storefront check builds the empty starter, then composes a temporary page us
 
 ## Maintenance
 
-Review Cloudflare/C3, framework and dependency updates weekly. Aim for monthly routine updates; expedite security and compatibility fixes. For managed templates, update exact dependencies and lockfiles, then run `npm run sync` from the repository root: each finalizer restores `scripts/managed-manifest.json` and `scripts/managed-wrangler.jsonc`, which are copies of the template's committed `package.json` and `wrangler.jsonc`. `npm run verify` fails while those snapshots are stale. Run template checks on pull requests and complete fresh-scaffold and deployment qualification before release.
+Review Cloudflare/C3, framework and dependency updates weekly. Aim for monthly routine updates; expedite security and compatibility fixes. Run template checks on pull requests and complete fresh-scaffold and deployment qualification before release.
+
+## Releases
+
+The Swell CLI pins C3 and references the `v0.1` tag. A patch release moves that tag, so template hotfixes need no CLI release. A breaking template change gets the next minor tag and a CLI release that updates `FRONTEND_TEMPLATE_REF` to it.
+
+1. Update exact dependencies and lockfiles, and bump each template's `version`.
+2. Run `npm run sync` from the repository root. Each finalizer restores `scripts/managed-manifest.json` and `scripts/managed-wrangler.jsonc`, which are byte copies of the template's committed `package.json` and `wrangler.jsonc`; `npm run verify` fails while those snapshots are stale.
+3. Run `npm run verify`, then qualify fresh scaffolds as described above.
+4. Commit and push, then move the tag for a patch (`git tag -f v0.1 && git push --force origin v0.1`) or create the next minor tag.
+5. Rerun the CLI's `npm run test:frontend-scaffolds` against the tag.

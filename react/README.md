@@ -39,7 +39,7 @@ npm test
 npm run build
 ```
 
-`prepare:managed` restores the pinned dependency declarations and the supported Wrangler profile after C3 changes them. Run it immediately after scaffolding, before generating types or building. It does not run on Swell's servers. The template targets compatibility date `2026-09-08`; keep it aligned with the managed platform profile.
+`prepare:managed` restores the pinned dependency declarations and the supported Wrangler profile after C3 changes them. Run it once on a fresh template copy, before generating types or building; the Swell CLI already runs it during scaffolding. It then removes its command, script and snapshots so it cannot reset later application changes. It does not run on Swell's servers. The template targets compatibility date `2026-09-08`; keep it aligned with the managed platform profile.
 
 Run `npm run dev` to start the local development server. Without Swell request context, the catalog cannot load platform data and `/app-api/context` returns an unavailable-context response. The public `/app-api/hello` endpoint can be exercised locally.
 

@@ -42,7 +42,7 @@ bun run cf-typegen
 bun run dev
 ```
 
-`prepare:managed` restores the managed Wrangler settings, scripts and pinned dependency declarations after C3 changes them. Keep the compatibility date aligned with the supported `2026-09-08` profile.
+`prepare:managed` restores the managed Wrangler settings, scripts and pinned dependency declarations after C3 changes them. Run it once on a fresh template copy; the Swell CLI already runs it during scaffolding. It then removes its command, script and snapshots so it cannot reset later application changes. Other scripts remain available. Keep the compatibility date aligned with the supported `2026-09-08` profile.
 
 The development server uses port 3000 by default; set `PORT` to choose another port. Hot module replacement is disabled in the existing Vite configuration, so refresh the browser after edits.
 
