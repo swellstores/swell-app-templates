@@ -45,6 +45,7 @@ for (const session of [{}, { user_id: 'user', client_id: 'other-store' }]) {
 test('validates session before a fixed backend read and returns only its count', async () => {
   const urls = [];
   globalThis.fetch = async (url, options) => {
+    assert.equal(options.redirect, 'manual');
     urls.push(String(url));
     if (urls.length === 1) {
       assert.equal(options.headers['X-Session'], 'fixture');
@@ -65,3 +66,20 @@ test('upstream exceptions do not leak credentials or response bodies', async () 
   assert.equal(result.status, 502);
   assert(!JSON.stringify(await result.json()).includes('private-fixture-token'));
 });
+
+for (const redirectAt of ['session', 'backend']) {
+  test(`rejects ${redirectAt} redirects without following them`, async () => {
+    let calls = 0;
+    globalThis.fetch = async (_url, options) => {
+      calls++;
+      assert.equal(options.redirect, 'manual');
+      if (redirectAt === 'backend' && calls === 1) {
+        return Response.json({ user_id: 'staff', client_id: 'example' });
+      }
+      return new Response(null, { status: 302, headers: { Location: 'https://untrusted.example' } });
+    };
+    const result = await adminProductCount(request('_swell_admin_session=fixture'));
+    assert.equal(result.status, redirectAt === 'session' ? 401 : 502);
+    assert.equal(calls, redirectAt === 'session' ? 1 : 2);
+  });
+}

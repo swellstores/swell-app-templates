@@ -42,14 +42,14 @@ export async function adminProductCount(request: Request) {
   }
   try {
     const sessionResponse = await fetch(new URL('/admin/api/session', adminUrl), {
-      headers: { 'X-Session': sessionId }, redirect: 'error',
+      headers: { 'X-Session': sessionId }, redirect: 'manual',
     });
     const session = sessionResponse.ok ? await sessionResponse.json() as { user_id?: string; client_id?: string } : null;
     if (!session?.user_id || session.client_id !== storeId) {
       return json({ error: 'Unauthorized' }, 401);
     }
     const response = await fetch(new URL('/products?limit=1', apiHost), {
-      headers: { Authorization: `Basic ${btoa(`${storeId}:${accessToken}`)}` }, redirect: 'error',
+      headers: { Authorization: `Basic ${btoa(`${storeId}:${accessToken}`)}` }, redirect: 'manual',
     });
     if (!response.ok) return json({ error: 'Unable to read the catalog' }, 502);
     const products = await response.json() as { count: number };
