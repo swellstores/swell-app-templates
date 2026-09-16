@@ -90,16 +90,23 @@ for (const name of templates) {
     assert(!config.images);
     const assetsDir = path.resolve(path.dirname(configPath), config.assets.directory);
     const headersText = await fs.readFile(path.join(assetsDir, '_headers'), 'utf8');
-    assert.match(headersText, /immutable/);
     // The immutable rule must match where this framework actually emits hashed assets.
-    const headerRules = headersText.split('\n').map((line) => line.trim()).filter((line) => line.startsWith('/'));
+    const blocks = [];
+    for (const line of headersText.split('\n').map((entry) => entry.trim()).filter(Boolean)) {
+      if (line.startsWith('/')) blocks.push({ path: line, headers: [] });
+      else blocks.at(-1)?.headers.push(line);
+    }
+    const immutableRules = blocks
+      .filter((block) => block.headers.some((header) => /^cache-control:.*\bimmutable\b/i.test(header)))
+      .map((block) => block.path);
+    assert(immutableRules.length > 0, '_headers must set an immutable Cache-Control rule');
     const hashedAssets = (await fs.readdir(assetsDir, { recursive: true }))
       .map((file) => `/${file.split(path.sep).join('/')}`)
       .filter((file) => /-[A-Za-z0-9_-]{6,}\.js$/.test(file));
     assert(hashedAssets.length > 0, 'build must emit hashed JS assets');
     assert(
-      hashedAssets.some((asset) => headerRules.some((rule) => (rule.endsWith('*') ? asset.startsWith(rule.slice(0, -1)) : rule === asset))),
-      `_headers rules (${headerRules.join(', ')}) do not cover hashed assets such as ${hashedAssets[0]}`,
+      hashedAssets.some((asset) => immutableRules.some((rule) => (rule.endsWith('*') ? asset.startsWith(rule.slice(0, -1)) : rule === asset))),
+      `immutable _headers rules (${immutableRules.join(', ')}) do not cover hashed assets such as ${hashedAssets[0]}`,
     );
     const port = await availablePort();
     const origin = `http://127.0.0.1:${port}`;
