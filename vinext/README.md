@@ -71,4 +71,4 @@ Use the included `SwellImage` component with a product/content URL from `https:/
 
 `public/_headers` marks hashed `/assets/*` immutable. Swell preserves browser caching as private; other responses stay no-store. The managed packager excludes sensitive files such as source maps, `.dev.vars`, dependency directories and build/serving configuration. Keep secrets and source files out of `public/`; local preview and direct Cloudflare deployment do not use Swell's packaging checks.
 
-Only `ASSETS` and Vinext's `CF_VERSION_METADATA` with Workers Cache are supported. Swell controls placement, CSP, CORS and cache policy. Managed runtime logs are not currently exposed; use local development for console debugging.
+Only `ASSETS` and Vinext's `CF_VERSION_METADATA` with Workers Cache are supported. Swell controls placement, CSP, CORS and cache policy. `/.swell/context` is reserved for the platform's public runtime context, and the `metadata` module name is reserved in packages. Managed runtime logs are not currently exposed; use local development for console debugging.

@@ -87,6 +87,6 @@ Swell retains `/api` and its other platform routes. This template does not provi
 
 ## Assets and verification
 
-The build emits no source maps. `public/_headers` marks hashed `/assets/*` immutable; Swell retains private browser caching while HTML containing store configuration stays no-store. Keep private files out of `public/`. Only the `ASSETS` binding is used, with no Cloudflare Images or other service bindings.
+The build emits no source maps. `public/_headers` marks hashed `/assets/*` immutable; Swell retains private browser caching while HTML containing store configuration stays no-store. Keep private files out of `public/`. Only the `ASSETS` binding is used, with no Cloudflare Images or other service bindings. `/.swell/context` is reserved for the platform's public runtime context, and the `metadata` module name is reserved in packages. Swell controls CSP, CORS and cache policy.
 
 The root verification script builds this template and a temporary generated page, then checks public configuration, SDK reads, cart additions, checkout links, deep links and editor selection using local Workers and mocked platform responses. These checks do not qualify live Swell storefront passwords, customer purchase flows, dev/tunnels or deployment. Managed runtime logs are not currently exposed.
