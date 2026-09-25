@@ -38,6 +38,19 @@ for (const name of templates) {
   try {
     await fs.cp(path.join(repository, name), cwd, { recursive: true,
       filter: (source) => !['node_modules', 'dist', '.wrangler', '.vinext', '.next', 'worker-configuration.d.ts', 'next-env.d.ts'].includes(path.basename(source)) && !source.endsWith('.tsbuildinfo') });
+    // Local experiment tarballs must retain their source-relative meaning in a clean copy.
+    const originalManifest = JSON.parse(await fs.readFile(path.join(cwd, 'package.json'), 'utf8'));
+    const localDependencies = Object.values({ ...originalManifest.dependencies, ...originalManifest.devDependencies })
+      .filter((value) => value.startsWith('file:') && !path.isAbsolute(value.slice(5)));
+    for (const file of ['package.json', 'package-lock.json', 'bun.lock', 'scripts/managed-manifest.json']) {
+      const target = path.join(cwd, file);
+      let source = await fs.readFile(target, 'utf8').catch(() => null);
+      if (source === null) continue;
+      for (const value of localDependencies) {
+        source = source.replaceAll(value.slice(5), path.resolve(repository, name, value.slice(5)));
+      }
+      await fs.writeFile(target, source);
+    }
     if (name === 'react-storefront') await run(['install', '--frozen-lockfile'], cwd, 'bun');
     else await run(['ci', '--no-fund', '--no-audit'], cwd);
     await fs.writeFile(path.join(cwd, 'public/.dev.vars'), 'PRIVATE-ASSET-SENTINEL');
@@ -132,7 +145,7 @@ for (const name of templates) {
       assert.match((await hello.json()).message, /Hello/);
       const privateResult = await fetch(`${origin}/app-api/admin/product-count`);
       assert.equal(privateResult.status, 401);
-      const context = await fetch(`${origin}/app-api/context`, { headers: {
+      const context = await fetch(`${origin}/app-api/${name === 'react' ? 'config' : 'context'}`, { headers: {
         'Swell-Store-Id': 'fixture', 'Swell-Public-Key': 'fixture-public', 'Swell-Admin-Url': 'https://fixture.swell.store',
         'Swell-Access-Token': 'private-sentinel',
       } });

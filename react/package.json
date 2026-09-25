@@ -16,7 +16,8 @@
   "dependencies": {
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "swell-js": "5.8.1"
+    "swell-js": "file:../../sdk-experiment-artifacts/packages/cookie-baseline/swell-js-5.9.0.tgz",
+    "@swell/apps-sdk": "file:../../sdk-experiment-artifacts/session-2-client-scope/swell-apps-sdk-2.0.0-alpha.0.tgz"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.54.9",

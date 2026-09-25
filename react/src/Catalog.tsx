@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { PublicConfig } from 'swell-js';
 import swell from 'swell-js';
 
 type Product = { id?: string; name?: string };
@@ -8,10 +9,10 @@ export default function Catalog() {
   const [status, setStatus] = useState('');
   async function loadProducts() {
     try {
-      const response = await fetch('/app-api/context');
-      const context = await response.json() as { storeId: string; publicKey: string; storefrontApiOrigin: string; error?: string };
-      if (!response.ok) throw new Error(context.error || 'Swell context unavailable');
-      swell.init(context.storeId, context.publicKey, { url: context.storefrontApiOrigin });
+      const response = await fetch('/app-api/config');
+      const config = await response.json() as PublicConfig & { error?: string };
+      if (!response.ok) throw new Error(config.error || 'Swell config unavailable');
+      swell.init(config.storeId, config.publicKey, config);
       const result = await swell.products.list({ limit: 5 });
       setProducts(result.results || []);
       setStatus(`${result.count || 0} products available`);

@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { afterEach, test } from 'node:test';
-import { adminProductCount, publicContext } from '../worker/swell-server.ts';
+import { adminProductCount, publicConfig } from '../worker/swell-server.ts';
 
 const originalFetch = globalThis.fetch;
 afterEach(() => { globalThis.fetch = originalFetch; });
 const headers = {
-  'Swell-Store-Id': 'example', 'Swell-Public-Key': 'public-fixture-key',
+  'Swell-Store-Id': 'example', 'Swell-Storefront-Id': 'secondary', 'Swell-Public-Key': 'public-fixture-key',
   'Swell-Admin-Url': 'https://example.swell.store',
   'Swell-API-Host': 'https://api.example.invalid',
   'Swell-Access-Token': 'private-fixture-token',
@@ -14,16 +14,17 @@ const request = (cookie) => new Request('https://app.example.invalid/app-api/adm
   headers: { ...headers, ...(cookie ? { Cookie: cookie } : {}) },
 });
 
-test('runtime context contains public fields only', async () => {
-  const result = await publicContext(request()).json();
+test('runtime config contains public fields only', async () => {
+  const result = await publicConfig(request()).json();
   assert.equal(result.storeId, 'example');
-  assert.equal(result.storefrontApiOrigin, 'https://example.swell.store');
+  assert.equal(result.url, 'https://example.swell.store');
+  assert.deepEqual(result.headers, { 'Swell-Storefront-Id': 'secondary' });
   assert(!JSON.stringify(result).includes('private-fixture-token'));
   assert(!JSON.stringify(result).includes('api.example.invalid'));
 });
 
 test('missing runtime context explains how to enter through Swell', () => {
-  assert.equal(publicContext(new Request('http://localhost/')).status, 503);
+  assert.equal(publicConfig(new Request('http://localhost/')).status, 503);
 });
 
 for (const cookie of [null, '_swell_admin_session=%ZZ']) {
@@ -79,7 +80,18 @@ for (const redirectAt of ['session', 'backend']) {
       return new Response(null, { status: 302, headers: { Location: 'https://untrusted.example' } });
     };
     const result = await adminProductCount(request('_swell_admin_session=fixture'));
-    assert.equal(result.status, redirectAt === 'session' ? 401 : 502);
+    assert.equal(result.status, 502);
     assert.equal(calls, redirectAt === 'session' ? 1 : 2);
+  });
+}
+
+for (const origin of [null, 'https://other.invalid', 'https://app.example.invalid']) {
+  test(`staff mutation origin check: ${origin}`, async () => {
+    globalThis.fetch = async (url) => String(url).includes('/admin/api/session')
+      ? Response.json({ user_id: 'staff', client_id: 'example' }) : Response.json({ count: 1 });
+    const result = await adminProductCount(new Request('https://app.example.invalid/app-api/admin/product-count', {
+      method: 'POST', headers: { ...headers, Cookie: '_swell_admin_session=fixture', ...(origin ? { Origin: origin } : {}) },
+    }));
+    assert.equal(result.status, origin === 'https://app.example.invalid' ? 200 : 403);
   });
 }

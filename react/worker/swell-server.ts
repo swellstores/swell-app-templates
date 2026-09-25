@@ -1,3 +1,5 @@
+import { getStorefrontConfig, requireStaff, SwellBackendAPI, SwellError } from '@swell/apps-sdk';
+
 export function json(body: unknown, status = 200) {
   return Response.json(body, {
     status,
@@ -5,21 +7,13 @@ export function json(body: unknown, status = 200) {
   });
 }
 
-// Swell supplies these headers per request. Never embed store values at build time.
-export function publicContext(request: Request) {
-  const headers = request.headers;
-  const storeId = headers.get('Swell-Store-Id');
-  const publicKey = headers.get('Swell-Public-Key');
-  const storefrontApiOrigin = headers.get('Swell-Admin-Url');
-  if (!storeId || !publicKey || !storefrontApiOrigin) {
+// Return public config only; the platform context contains server credentials.
+export function publicConfig(request: Request) {
+  try {
+    return json(getStorefrontConfig(request.headers));
+  } catch {
     return json({ error: 'Open this frontend through swell app dev or its Swell app address.' }, 503);
   }
-  return json({
-    storeId, publicKey, storefrontApiOrigin,
-    environmentId: headers.get('Swell-Environment-Id'),
-    appId: headers.get('Swell-App-Id'),
-    storefrontId: headers.get('Swell-Storefront-Id'),
-  });
 }
 
 // Example policy: any validated staff session for this store may read this count.
@@ -28,33 +22,27 @@ export function publicContext(request: Request) {
 export async function adminProductCount(request: Request) {
   const cookie = (request.headers.get('Cookie') || '').split(';')
     .map((part) => part.trim()).find((part) => part.startsWith('_swell_admin_session='));
-  let sessionId;
+  let sessionId: string | undefined;
   try { sessionId = cookie && decodeURIComponent(cookie.slice('_swell_admin_session='.length)); }
   catch { return json({ error: 'Invalid session' }, 401); }
   if (!sessionId) return json({ error: 'Open this app from the Swell dashboard to sign in.' }, 401);
-
-  const storeId = request.headers.get('Swell-Store-Id');
-  const adminUrl = request.headers.get('Swell-Admin-Url');
-  const apiHost = request.headers.get('Swell-API-Host');
-  const accessToken = request.headers.get('Swell-Access-Token');
-  if (!storeId || !adminUrl || !apiHost || !accessToken) {
-    return json({ error: 'Swell request context is unavailable' }, 503);
+  try {
+    await requireStaff({
+      headers: request.headers,
+      method: request.method,
+      origin: new URL(request.url).origin,
+      cookies: { get: () => sessionId },
+    });
+  } catch (error) {
+    if (error instanceof SwellError && error.status === 401) return json({ error: 'Unauthorized' }, 401);
+    if (error instanceof SwellError && error.status === 403) return json({ error: 'Forbidden' }, 403);
+    return json({ error: 'Unable to verify the staff session' }, 502);
   }
   try {
-    const sessionResponse = await fetch(new URL('/admin/api/session', adminUrl), {
-      headers: { 'X-Session': sessionId }, redirect: 'manual',
-    });
-    const session = sessionResponse.ok ? await sessionResponse.json() as { user_id?: string; client_id?: string } : null;
-    if (!session?.user_id || session.client_id !== storeId) {
-      return json({ error: 'Unauthorized' }, 401);
-    }
-    const response = await fetch(new URL('/products?limit=1', apiHost), {
-      headers: { Authorization: `Basic ${btoa(`${storeId}:${accessToken}`)}` }, redirect: 'manual',
-    });
-    if (!response.ok) return json({ error: 'Unable to read the catalog' }, 502);
-    const products = await response.json() as { count: number };
+    const backend = new SwellBackendAPI({ headers: request.headers });
+    const products = await backend.get<{ count: number }>('/products', { limit: 1 });
     return json({ count: products.count });
   } catch {
-    return json({ error: 'Unable to complete the platform request' }, 502);
+    return json({ error: 'Unable to read the catalog' }, 502);
   }
 }

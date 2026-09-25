@@ -41,7 +41,7 @@ npm run build
 
 `prepare:managed` restores the pinned dependency declarations and the supported Wrangler profile after C3 changes them. Run it once on a fresh template copy, before generating types or building; the Swell CLI already runs it during scaffolding. It then removes its command, script and snapshots so it cannot reset later application changes. It does not run on Swell's servers. The template targets compatibility date `2026-09-08`; keep it aligned with the managed platform profile.
 
-Run `npm run dev` to start the local development server. Without Swell request context, the catalog cannot load platform data and `/app-api/context` returns an unavailable-context response. The public `/app-api/hello` endpoint can be exercised locally.
+Run `npm run dev` to start the local development server. Without Swell request context, the catalog cannot load platform data and `/app-api/config` returns an unavailable-context response. The public `/app-api/hello` endpoint can be exercised locally.
 
 ## Swell integration preview
 
@@ -55,10 +55,10 @@ The intended workflow is `swell app dev` for development through Swell and `swel
 
 ## Data and endpoints
 
-Use `swell-js` directly for ordinary platform data exchange. The catalog example initializes it using public runtime context from `/app-api/context`; the example does not embed store/environment values during building. Backend API hosts and tokens are not part of public context.
+Use `swell-js` in the browser for ordinary platform data exchange and `@swell/apps-sdk` in the Worker. The catalog example initializes swell-js with public runtime config from `/app-api/config`; the example does not embed store/environment values during building. Backend API hosts and tokens are not part of public config.
 
 - `/app-api/hello`: public example.
-- `/app-api/context`: public request-time store configuration.
+- `/app-api/config`: public request-time store configuration.
 - `/app-api/admin/product-count`: fixed Backend API read. It validates `_swell_admin_session` through Swell and requires the session to belong to the current store. Its explicit example policy allows any validated staff session for this store to read the catalog count. Add operation-specific user permissions before exposing more privileged data.
 
 The protected example returns only a count. Do not turn it into an unrestricted Backend API proxy. Credentials and sessions must never appear in responses, browser bundles or logs. Use non-GET methods and appropriate CSRF protection when adding cookie-authenticated mutations. Public pages remain accessible without a staff session.

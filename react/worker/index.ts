@@ -1,10 +1,10 @@
-import { adminProductCount, json, publicContext } from './swell-server.js';
+import { adminProductCount, json, publicConfig } from './swell-server.js';
 
 export default {
   async fetch(request, env) {
     const { pathname } = new URL(request.url);
-    if (pathname === '/app-api/context') {
-      return request.method === 'GET' ? publicContext(request) : json({ error: 'Method not allowed' }, 405);
+    if (pathname === '/app-api/config') {
+      return request.method === 'GET' ? publicConfig(request) : json({ error: 'Method not allowed' }, 405);
     }
     if (pathname === '/app-api' || pathname.startsWith('/app-api/')) {
       if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
