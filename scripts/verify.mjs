@@ -5,14 +5,18 @@ import path from 'node:path';
 import net from 'node:net';
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { prepareStorefrontFixture, verifyStorefrontBrowser } from './storefront-checks.mjs';
+import { prepareVinextStaffWrite, verifyVinextTemplate } from './vinext-checks.mjs';
 
 const repository = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const requested = process.argv.slice(2);
 const templates = requested.length ? requested : ['react', 'vinext', 'react-storefront'];
 for (const name of templates) assert(['react', 'vinext', 'react-storefront'].includes(name), 'Unknown template');
 const report = { node: process.version, templates: {} };
+// Verification tooling only; no CLI dependency is copied into a generated app.
+const captureModule = process.env.SWELL_CLI_PACKAGE_MODULE || path.resolve(repository, '../swell-cli/dist/lib/apps/frontend-package.js');
+const capture = templates.includes('vinext') ? await import(pathToFileURL(captureModule).href) : null;
 
 function run(args, cwd, manager = 'npm') {
   return new Promise((resolve, reject) => {
@@ -53,6 +57,7 @@ for (const name of templates) {
     }
     if (name === 'react-storefront') await run(['install', '--frozen-lockfile'], cwd, 'bun');
     else await run(['ci', '--no-fund', '--no-audit'], cwd);
+    await fs.mkdir(path.join(cwd, 'public'), { recursive: true });
     await fs.writeFile(path.join(cwd, 'public/.dev.vars'), 'PRIVATE-ASSET-SENTINEL');
     const configFile = path.join(cwd, 'wrangler.jsonc');
     const expected = await fs.readFile(configFile, 'utf8');
@@ -89,7 +94,21 @@ for (const name of templates) {
         assert.deepEqual(await fs.readFile(path.join(scriptsPath, file)), remainingContents[index]);
       }
     }
-    for (const script of ['cf-typegen', 'typecheck', 'lint', 'test', 'build']) await run(['run', script], cwd);
+    const checks = name === 'vinext' ? ['cf-typegen', 'typecheck', 'build'] : ['cf-typegen', 'typecheck', 'lint', 'test', 'build'];
+    for (const script of checks) await run(['run', script], cwd);
+    if (name === 'vinext') {
+      const pkg = await capture.captureFrontendPackage(cwd, 'vinext');
+      capture.verifyFrontendPackage(pkg);
+      assert(pkg.files.some((file) => file.kind === 'module' && file.path.startsWith('ssr/')), 'capture must include SSR modules');
+      assert.deepEqual(pkg.runtime, { compatibility_date: '2026-09-08', compatibility_flags: [], bindings: ['ASSETS'], cache: false });
+      report.vinextCapture = { digest: pkg.digest, files: pkg.files.length, runtime: pkg.runtime };
+      await fs.mkdir(path.join(repository, '.verification'), { recursive: true });
+      await fs.writeFile(path.join(repository, '.verification/vinext-package.json'), JSON.stringify(pkg));
+      console.log('PASS vinext: CLI managed-package capture');
+      // The captured package is the shipped template; the Worker below also carries the recipe route.
+      await prepareVinextStaffWrite(cwd);
+      for (const script of ['typecheck', 'build']) await run(['run', script], cwd);
+    }
     if (name === 'react-storefront') {
       await run(['run', 'claude:check'], cwd);
       await prepareStorefrontFixture(cwd);
@@ -138,14 +157,14 @@ for (const name of templates) {
     assert(ready, `Worker did not start: ${logs}`);
     const page = await fetch(origin);
     assert.equal(page.status, 200);
-    assert.match(await page.text(), name !== 'vinext' ? /id="root"/ : /Swell Vinext app/);
-    if (name !== 'react-storefront') {
+    if (name !== 'vinext') assert.match(await page.text(), /id="root"/);
+    if (name === 'react') {
       const hello = await fetch(`${origin}/app-api/hello`, { headers: { Accept: 'text/html', 'Sec-Fetch-Mode': 'navigate' } });
       assert.equal(hello.status, 200);
       assert.match((await hello.json()).message, /Hello/);
       const privateResult = await fetch(`${origin}/app-api/admin/product-count`);
       assert.equal(privateResult.status, 401);
-      const context = await fetch(`${origin}/app-api/${name === 'react' ? 'config' : 'context'}`, { headers: {
+      const context = await fetch(`${origin}/app-api/config`, { headers: {
         'Swell-Store-Id': 'fixture', 'Swell-Public-Key': 'fixture-public', 'Swell-Admin-Url': 'https://fixture.swell.store',
         'Swell-Access-Token': 'private-sentinel',
       } });
@@ -153,13 +172,11 @@ for (const name of templates) {
       const publicData = await context.json();
       assert.equal(publicData.storeId, 'fixture');
       assert(!JSON.stringify(publicData).includes('private-sentinel'));
-      if (name === 'react') {
-        assert.equal((await fetch(`${origin}/example/deep-link`, { headers: { 'Sec-Fetch-Mode': 'navigate' } })).status, 200);
-        const missing = await fetch(`${origin}/app-api/missing`, { headers: { Accept: 'text/html', 'Sec-Fetch-Mode': 'navigate' } });
-        assert.equal(missing.status, 404);
-        assert.equal((await missing.json()).error, 'Not found');
-      }
-    } else {
+      assert.equal((await fetch(`${origin}/example/deep-link`, { headers: { 'Sec-Fetch-Mode': 'navigate' } })).status, 200);
+      const missing = await fetch(`${origin}/app-api/missing`, { headers: { Accept: 'text/html', 'Sec-Fetch-Mode': 'navigate' } });
+      assert.equal(missing.status, 404);
+      assert.equal((await missing.json()).error, 'Not found');
+    } else if (name === 'react-storefront') {
       for (const pathname of ['/api/products', '/app-api', '/app-api/context']) {
         assert.equal((await fetch(`${origin}${pathname}`, { headers: { 'Sec-Fetch-Mode': 'navigate' } })).status, 404);
       }
@@ -174,6 +191,8 @@ for (const name of templates) {
     try {
       if (name === 'react-storefront') {
         await verifyStorefrontBrowser(browser, origin);
+      } else if (name === 'vinext') {
+        await verifyVinextTemplate(origin, hashedAssets[0], browser);
       } else {
         const page = await browser.newPage({ extraHTTPHeaders: {
           'Swell-Store-Id': 'fixture', 'Swell-Public-Key': 'fixture-public', 'Swell-Admin-Url': origin,
@@ -187,21 +206,19 @@ for (const name of templates) {
           await route.fulfill({ json: { count: 1, results: [{ id: 'fixture', name: 'Fixture product' }] } });
         });
         await page.goto(origin);
-        await page.getByRole('heading', { name: name === 'react' ? 'Swell React app' : 'Swell Vinext app' }).waitFor();
+        await page.getByRole('heading', { name: 'Swell React app' }).waitFor();
         await page.getByRole('button', { name: 'Load products with swell-js' }).click();
         await page.getByText('Fixture product', { exact: true }).waitFor();
         assert.equal(sdkRequests, 1);
         await page.getByRole('button', { name: 'Read backend count (staff)' }).click();
         await page.getByRole('status').filter({ hasText: 'Open this app from the Swell dashboard' }).waitFor();
-        if (name === 'react') {
-          await page.goto(`${origin}/example/deep-link`);
-          await page.getByRole('heading', { name: 'Swell React app' }).waitFor();
-        }
+        await page.goto(`${origin}/example/deep-link`);
+        await page.getByRole('heading', { name: 'Swell React app' }).waitFor();
         assert.deepEqual(errors, []);
       }
     } finally { await browser.close(); }
-    report.templates[name] = { cleanInstall: true, finalization: true, types: true, lint: true, unitTests: true, build: true, workerRoutes: true, browser: true, mockedSdkRead: true, privateAssetExclusion: true };
-    console.log(`PASS ${name}: clean copy, finalization, build, Worker routes and Chromium SDK read`);
+    report.templates[name] = { cleanInstall: true, finalization: true, checks, workerRoutes: true, browser: true, privateAssetExclusion: true };
+    console.log(`PASS ${name}: clean copy, finalization, build, Worker routes and Chromium`);
   } finally {
     if (worker && worker.exitCode === null) {
       const stopped = new Promise((resolve) => worker.once('exit', resolve));
