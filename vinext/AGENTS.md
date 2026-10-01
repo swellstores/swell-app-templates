@@ -24,10 +24,6 @@ optimization are off.
    dashboard shows the deployed frontend (the last `swell app push`), not this
    preview.
 
-Plain `npm run dev` has no store: the home page says "Not connected" and every
-helper in `lib/swell.ts` that needs a store throws. That is by design. Do not
-add credentials to an env file to work around it.
-
 ## Where things are
 
 | Need | File |
@@ -171,16 +167,12 @@ const reviews = await backend.get(`/apps/${swell!.appId}/reviews`, { limit: 10 }
   route handler, unless the data is meant for every visitor. The handler
   decides which Backend path and query are used; the browser supplies only ids
   and values, and ids are encoded into the path.
-- **Only `getPublicConfig()` crosses to the browser.** `getSwellContext()`
-  contains the app's access token.
 - **Staff writes are route handlers, not server actions.** The staff check
   compares the request's origin with this app's address to stop other sites
   from acting as the signed-in staff member. A server action has no request to
   take that address from.
 - **Pages and `GET` handlers do not change data.** The origin check applies to
   other methods only.
-- **Use `swell-js` in effects and event handlers**, not while rendering a
-  client component. It needs the browser.
 - **No Node.js built-ins.** The code runs in a Cloudflare Worker without
   Node.js compatibility. Use web APIs (`fetch`, `crypto.subtle`, `URL`).
 - **Do not change `wrangler.jsonc` or add bindings, secrets or env vars.**

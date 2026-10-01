@@ -6,10 +6,18 @@ import { createStorefrontClient } from "@swell/apps-sdk/storefront";
 // to every request it sends to this app; these helpers read them per request.
 
 // Store context, or null when the page was opened without Swell (plain `npm run dev`).
-// It includes the app's access token: keep it on the server.
 export async function getSwellContext() {
-  const context = parseSwellHeaders(await headers());
-  return context.storeId ? context : null;
+  const { storeId, appId, environmentId, storefrontId } = parseSwellHeaders(await headers());
+  return storeId ? { storeId, appId, environmentId, storefrontId } : null;
+}
+
+// Swell's request headers, or an error that says how to get them.
+async function swellHeaders() {
+  const swell = await headers();
+  if (!swell.get("Swell-Store-Id")) {
+    throw new Error("Not connected to a store. Run `swell app dev` from the app folder and open the address it prints.");
+  }
+  return swell;
 }
 
 // Public store settings for swell-js in the browser, or null when not connected.
@@ -23,7 +31,7 @@ export async function getPublicConfig() {
 // the write is skipped and the browser keeps the session it has.
 export async function getStorefront() {
   const jar = await cookies();
-  return createStorefrontClient(getStorefrontConfig(await headers()), {
+  return createStorefrontClient(getStorefrontConfig(await swellHeaders()), {
     cookies: {
       get: (name) => jar.get(name)?.value,
       set: (name, value, options) => {
@@ -40,7 +48,7 @@ export async function getStorefront() {
 // Backend API client with this app's access token. Its data is not public:
 // check who is asking (getStaff, requireStaffRequest) before returning any of it.
 export async function getBackend() {
-  return new SwellBackendAPI({ headers: await headers() });
+  return new SwellBackendAPI({ headers: await swellHeaders() });
 }
 
 // The staff member viewing a page in the Swell dashboard, or null for a visitor.
