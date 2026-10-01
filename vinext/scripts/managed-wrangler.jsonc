@@ -1,4 +1,9 @@
 {
+  // Swell builds and deploys this Worker with `swell app push`, using exactly
+  // this profile. A changed compatibility date, flag, binding or var is rejected.
+  // Node.js built-ins are available at this compatibility date without a flag.
+  // For configuration use app settings: a .env or .dev.vars file works in
+  // development and is not deployed.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "swell-vinext",
   "compatibility_date": "2026-09-08",

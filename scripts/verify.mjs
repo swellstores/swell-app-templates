@@ -61,7 +61,8 @@ for (const name of templates) {
     await fs.writeFile(path.join(cwd, 'public/.dev.vars'), 'PRIVATE-ASSET-SENTINEL');
     const configFile = path.join(cwd, 'wrangler.jsonc');
     const expected = await fs.readFile(configFile, 'utf8');
-    const changed = JSON.parse(expected);
+    // wrangler.jsonc may carry comment lines; C3 rewrites the file without them.
+    const changed = JSON.parse(expected.replace(/^\s*\/\/.*$/gm, ''));
     changed.compatibility_date = '2026-09-14';
     changed.observability = { enabled: true };
     changed.upload_source_maps = true;

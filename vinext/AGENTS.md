@@ -173,10 +173,3 @@ const reviews = await backend.get(`/apps/${swell!.appId}/reviews`, { limit: 10 }
   take that address from.
 - **Pages and `GET` handlers do not change data.** The origin check applies to
   other methods only.
-- **No Node.js built-ins.** The code runs in a Cloudflare Worker without
-  Node.js compatibility. Use web APIs (`fetch`, `crypto.subtle`, `URL`).
-- **Do not change `wrangler.jsonc` or add bindings, secrets or env vars.**
-  Swell deploys with a fixed Worker profile and rejects anything else. Store
-  configuration belongs in app settings.
-- **Deploy with `swell app push` from the app folder.** Do not deploy to
-  Cloudflare directly.
