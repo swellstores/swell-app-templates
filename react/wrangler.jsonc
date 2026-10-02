@@ -1,4 +1,9 @@
 {
+  // Swell builds and deploys this Worker with `swell app push`, using exactly
+  // this profile. A changed compatibility date, flag, binding or var is rejected.
+  // Node.js built-ins are available at this compatibility date without a flag.
+  // For configuration use app settings: .dev.vars reaches the Worker in
+  // development only and is not deployed.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "swell-react",
   "main": "worker/index.ts",
