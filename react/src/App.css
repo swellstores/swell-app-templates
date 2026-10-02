@@ -1,13 +1,12 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
+.button {
+  font: 500 15px var(--sans);
+  padding: 7px 10px;
   border-radius: 5px;
   color: var(--accent);
   background: var(--accent-bg);
   border: 2px solid transparent;
   transition: border-color 0.3s;
   width: 100%;
-  justify-content: center;
   cursor: pointer;
 
   &:hover {
@@ -34,6 +33,19 @@
 
   h1 {
     line-height: 110%;
+    margin-top: 0;
+  }
+
+  .eyebrow {
+    color: var(--accent);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .hint {
+    font-size: 15px;
   }
 
   & > div > p,
@@ -165,12 +177,6 @@
     }
   }
 
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
   @media (max-width: 1024px) {
     flex-direction: column;
     text-align: center;
@@ -182,7 +188,8 @@
   padding: 0;
   display: flex;
   gap: 8px;
-  margin: 32px 0 0;
+  margin: 0;
+  justify-content: center;
 
   .logo {
     height: 18px;
@@ -217,9 +224,7 @@
   }
 
   @media (max-width: 1024px) {
-    margin-top: 20px;
     flex-wrap: wrap;
-    justify-content: center;
 
     li {
       flex: 1 1 calc(50% - 8px);
@@ -230,14 +235,6 @@
       justify-content: center;
       box-sizing: border-box;
     }
-  }
-}
-
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
   }
 }
 

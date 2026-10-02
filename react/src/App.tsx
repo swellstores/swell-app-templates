@@ -30,6 +30,7 @@ function App() {
   return (
     <>
       <section id="center">
+        <p className="eyebrow">Swell app · React</p>
         {config ? (
           <div>
             <h1>Your Swell app is connected.</h1>
@@ -67,7 +68,7 @@ function App() {
         {config === null && <code className="command">swell app dev</code>}
 
         {config && (
-          <p>
+          <p className="hint">
             Start in <code>src/App.tsx</code>. Preview with <code>swell app dev</code> and deploy with{' '}
             <code>swell app push</code>, both from the app folder.
           </p>
@@ -78,11 +79,6 @@ function App() {
 
       <section id="next-steps">
         <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
           <ul>
             <li>
               <a href="https://developers.swell.is" target="_blank">
@@ -92,13 +88,13 @@ function App() {
             <li>
               <a href="https://vite.dev/" target="_blank">
                 <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
+                Vite
               </a>
             </li>
             <li>
               <a href="https://react.dev/" target="_blank">
                 <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
+                React
               </a>
             </li>
             <li>
@@ -110,9 +106,6 @@ function App() {
           </ul>
         </div>
       </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
     </>
   )
 }

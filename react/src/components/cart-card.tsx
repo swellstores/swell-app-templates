@@ -54,7 +54,7 @@ export default function CartCard() {
       <p>
         Items in this browser's cart <span className={`badge ${count === null && !message ? 'loading' : ''}`}>{count ?? '…'}</span>
       </p>
-      <button className="counter" disabled={pending} onClick={addItem} type="button">
+      <button className="button" disabled={pending} onClick={addItem} type="button">
         Add to cart
       </button>
       {message && <p>{message}</p>}
