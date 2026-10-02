@@ -1,15 +1,22 @@
-import { cache } from "react";
 import { cookies, headers } from "next/headers";
-import { getStorefrontConfig, requireStoreUser as checkStoreUser, SwellBackendAPI, SwellError, verifySwellContext } from "@swell/apps-sdk";
+import { getStorefrontConfig, requireStoreUser as checkStoreUser, SwellBackendAPI, SwellError, verifySwellContext, type SwellRequestContext } from "@swell/apps-sdk";
 import { createStorefrontClient } from "@swell/apps-sdk/storefront";
 
 // Server-only request context, including credentials. Never pass it to the browser.
-// React cache shares verification within a server render, not between requests.
+// Verified once per request, keyed by the request's headers: the signed context is
+// valid for about a minute, so verifying it again late in a slow request would fail.
 // No context means plain `npm run dev`; an invalid context still throws.
-export const getSwellContext = cache(async () => {
+const verified = new WeakMap<Headers, Promise<SwellRequestContext | null>>();
+
+export async function getSwellContext() {
   const incoming = await headers();
-  return incoming.get("Swell-Context") === null ? null : verifySwellContext(incoming);
-});
+  let context = verified.get(incoming);
+  if (!context) {
+    context = incoming.get("Swell-Context") === null ? Promise.resolve(null) : verifySwellContext(incoming);
+    verified.set(incoming, context);
+  }
+  return context;
+}
 
 async function requireContext() {
   const context = await getSwellContext();

@@ -36,6 +36,7 @@ export async function startMockPlatform(appOrigin) {
     if (route === 'GET /api/products') return send(200, { count: 10, page: 1, results: [
       { id: 'p1', name: 'Fixture product', images: [{ file: { url: 'https://cdn.fixture.test/p1.jpg' } }] },
       { id: 'p2', name: 'No image' },
+      { id: 'p3', name: 'Relative image', images: [{ file: { url: '/local/p3.jpg' } }] },
     ] });
     if (route === 'GET /api/cart') return send(200, state.quantity ? { item_quantity: state.quantity } : null);
     if (route === 'POST /api/cart/items') return send(200, { item_quantity: ++state.quantity });

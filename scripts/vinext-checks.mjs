@@ -35,6 +35,7 @@ export async function verifyVinextTemplate(origin, asset, browser, mock) {
   assert.match(visitor.body, /10 products in this store, read on the server\./);
   assert.match(visitor.html, /<img src="https:\/\/cdn\.fixture\.test\/p1\.jpg\?width=64&amp;height=64" alt="Fixture product"/);
   assert.match(visitor.html, /<li title="No image"><span[^>]*>N<\/span>/, 'a product without a photo shows its initial');
+  assert.match(visitor.html, /<img src="\/local\/p3\.jpg" alt="Relative image"/, 'an image URL that is not absolute is used as it is');
   assert.match(visitor.body, /You are viewing as a visitor \. Run swell app dev --store-user to view it the way it opens inside the Swell dashboard\./);
   assert.equal(visitor.response.headers.get('set-cookie'), null);
   assert.match(visitor.response.headers.get('cache-control'), /no-store/);
@@ -125,6 +126,11 @@ export async function verifyVinextTemplate(origin, asset, browser, mock) {
   const apiRoute = page.getByRole('link', { name: 'API route /app-api/hello' });
   assert.equal(await apiRoute.getAttribute('href'), '/app-api/hello');
   assert.equal(await apiRoute.getAttribute('target'), '_blank');
+  // A failing Storefront API shows a general message; the details go to the console.
+  state.failCatalog = true;
+  await page.reload();
+  await page.getByText('The cart could not be loaded. Please try again.').waitFor();
+  state.failCatalog = false;
   assert.deepEqual(errors, []);
   await page.close();
 }

@@ -14,7 +14,10 @@ export default function CartCard() {
     swell.cart
       .get()
       .then((cart) => setCount(cart?.item_quantity ?? 0))
-      .catch((error: Error) => setMessage(`The cart could not be loaded: ${error.message}`));
+      .catch((error: unknown) => {
+        console.error("Cart lookup failed", error);
+        setMessage("The cart could not be loaded. Please try again.");
+      });
   }, [swell]);
 
   async function addItem() {
@@ -41,7 +44,8 @@ export default function CartCard() {
       }
       setCount(cart.item_quantity ?? 0);
     } catch (error) {
-      setMessage(`The item could not be added: ${(error as Error).message}`);
+      console.error("Cart change failed", error);
+      setMessage("The item could not be added. Please try again.");
     } finally {
       setPending(false);
     }

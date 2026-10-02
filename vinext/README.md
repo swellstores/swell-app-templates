@@ -25,10 +25,10 @@ The Swell dashboard shows the deployed build, after `swell app push`.
 Running `npm run dev` in this folder starts the frontend without Swell. The
 home page then says "Not connected to a store", which is expected.
 
-`.dev.vars` disables Swell header-signature verification for local development,
-including development against a local Swell instance. Remove `SWELL_VERIFY_HEADERS`
-or set it to `"true"` to enable verification. `swell app push` excludes this file;
-deployed apps verify signatures by default.
+Swell signs the context it sends with each request, and the app verifies the
+signature. To skip verification in local development, set
+`SWELL_VERIFY_HEADERS` to `"false"` in `.dev.vars`. `swell app push` excludes
+this file; deployed apps always verify.
 
 ## Working patterns
 
@@ -45,7 +45,7 @@ The code and this table are the starting points for extending the app:
 | Display a Swell image | `components/swell-image.tsx` |
 
 `lib/swell.ts` connects the server SDK to the framework. It reads Swell's context
-per request and shares verification within a server render. The context contains
+and verifies it once per request, however many helpers run. The context contains
 credentials: keep it on the server. Only `getPublicConfig()` goes to the browser.
 
 - **Storefront API:** use `getStorefront()` on the server or `useSwell()` in a

@@ -26,9 +26,9 @@ Running `npm run dev` in this folder starts the frontend without Swell. The
 home page then says "Not connected to a store", which is expected.
 
 Swell signs the context it sends with each request, and the Worker verifies the
-signature. To skip verification, for example when developing against a local
-Swell instance, set `SWELL_VERIFY_HEADERS` to `"false"` in `.dev.vars`.
-`swell app push` excludes this file; deployed apps always verify.
+signature. To skip verification in local development, set
+`SWELL_VERIFY_HEADERS` to `"false"` in `.dev.vars`. `swell app push` excludes
+this file; deployed apps always verify.
 
 ## Working patterns
 

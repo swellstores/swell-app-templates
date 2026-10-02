@@ -47,9 +47,12 @@ The complete changes to the generated tree are:
 - `scripts/prepare-managed.mjs` and its two byte-for-byte snapshots restore the
   managed settings after C3 rewrites them, then delete themselves.
 - `.gitignore`: exclude generated Worker types, TypeScript build metadata and
-  local `.dev.vars.*` files; retain the scaffolded `.dev.vars`.
-- `.dev.vars`: disable header-signature verification in local development. Managed
-  package capture verifies that it and its variable are excluded from deployment.
+  `.dev.vars` files.
+- `.dev.vars`: names the header-signature verification switch, left enabled.
+  It is tracked in this repository although `.gitignore` covers it, so a
+  generated app gets the file and its git ignores it. Use `git add -f` to add
+  it again.
+  Managed package capture verifies that the file is excluded from deployment.
 - No custom `_headers`, cache adapter or application tests are shipped.
 
 The generated Vinext `_headers` comment and immutable static-asset rule are
@@ -104,8 +107,9 @@ files; only dependency ranges moved. The complete changes to the generated tree 
 - `public/_headers`: immutable caching for hashed `/assets/*`.
 - `scripts/prepare-managed.mjs` and its two byte-for-byte snapshots restore the
   managed settings after C3 rewrites them, then delete themselves.
-- `.gitignore`: upstream's, and the scaffolded `.dev.vars` is retained.
+- `.gitignore`: upstream's.
 - `.dev.vars`: names the header-signature verification switch, left enabled.
+  Tracked in this repository although `.gitignore` covers it, as in Vinext.
   Managed package capture verifies that the file is excluded from deployment.
 - `index.html`: the title.
 - Removed: upstream's README, the hero image and Cloudflare logo, and the social
