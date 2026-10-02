@@ -1,23 +1,17 @@
 {
+  // Swell builds and deploys this Worker with `swell app push`, using exactly
+  // this profile. A changed compatibility date, flag, binding or var is rejected.
+  // Node.js built-ins are available at this compatibility date without a flag.
+  // For configuration use app settings: a .env or .dev.vars file works in
+  // development and is not deployed.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "swell-vinext",
-  "main": "vinext/server/fetch-handler",
   "compatibility_date": "2026-09-08",
   "compatibility_flags": [],
+  "main": "vinext/server/fetch-handler",
   "assets": {
-    "binding": "ASSETS",
-    "html_handling": "auto-trailing-slash",
+    "directory": "dist/client",
     "not_found_handling": "none",
-    "run_worker_first": false
-  },
-  "observability": {
-    "enabled": false
-  },
-  "upload_source_maps": false,
-  "cache": {
-    "enabled": true
-  },
-  "version_metadata": {
-    "binding": "CF_VERSION_METADATA"
+    "binding": "ASSETS"
   }
 }

@@ -8,10 +8,12 @@
   },
   "vinext": {
     "source": "https://github.com/cloudflare/vinext",
-    "createVinextApp": "1.0.0-beta.2",
+    "createVinextApp": "1.0.0",
     "variant": "vinext",
     "platform": "cloudflare",
-    "scaffoldCommand": "npm create cloudflare@2.72.7 -- frontend --category=web-framework --framework=next --variant=vinext --deploy=false --git=false --no-agents --no-auto-update"
+    "scaffoldCommand": "npm exec --yes --package=create-vinext-app@1.0.0 -- create-vinext-app frontend --platform cloudflare --legacy-wrangler-cloudflare-init --cdn-cache none --data-cache none --image-optimization none --no-prerender --no-warm-cache --use-npm --skip-install --disable-git --yes",
+    "vinext": "1.0.0",
+    "generatedOn": "2026-09-30"
   },
   "generatedOn": "2026-09-14",
   "qualifiedCompatibilityDate": "2026-09-08",

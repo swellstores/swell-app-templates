@@ -1,74 +1,84 @@
-# Swell Vinext template
+# Swell app frontend
 
-A Swell app frontend based on Cloudflare's scaffold, with an application Worker and Swell managed hosting settings.
+The frontend of a Swell app, built with [vinext](https://github.com/cloudflare/vinext),
+TypeScript and Tailwind CSS. Swell builds it, hosts it and connects it to the
+store where the app is installed. You do not need a Cloudflare account.
 
-**Preview:** released Swell CLI integration and end-to-end deployment verification are pending. Local build and browser checks have passed with mocked platform responses; dev/tunnel context and real Swell sessions still need verification.
+Vinext implements the Next.js App Router API on Vite. Use `app/`, server and
+client components, route handlers and `next/*` imports. Vinext provides those
+imports; do not install the `next` package. Pages render on each request;
+response caching, prerendering and image optimization are off.
 
-## CLI scaffolding preview
+## Develop
 
-With the development Swell CLI that includes the managed template choices:
-
-```sh
-swell create app my-app -t admin --frontend swell-vinext -y
-cd my-app
-swell app frontend dev
-# Deploy with a compatible managed-hosting platform:
-swell app push
-```
-
-The CLI automatically finalizes the template, sets `frontend.hosting: managed`
-in the parent `swell.json`, installs dependencies and generates Worker types.
-Choose a package manager with `--pkg npm|yarn|pnpm|bun`. For an existing app, run
-`swell create frontend --frontend swell-vinext -y` from its directory.
-
-These commands require the development CLI; released CLI support and live
-deployment/tunnel qualification are still pending. The standalone setup below
-is for working directly on a copy of this template.
-
-## Local evaluation
-
-Use Node.js 22.22.2 and npm. Copy this directory to your working location and run the following commands from that directory:
+From the app folder, one level above this one:
 
 ```sh
-npm run prepare:managed
-npm ci
-npm run cf-typegen
-npm run typecheck
-npm run lint
-npm test
-npm run build
+swell app dev
 ```
 
-`prepare:managed` restores the pinned dependency declarations and the supported Wrangler profile after C3 changes them. Run it once on a fresh template copy, before generating types or building; the Swell CLI already runs it during scaffolding. It then removes its command, script and snapshots so it cannot reset later application changes. It does not run on Swell's servers. The template targets compatibility date `2026-09-08`; keep it aligned with the managed platform profile.
+Open the address it prints. Edits reload in place. This preview opens as a
+visitor. Run `swell app dev --store-user` to be recognized as the store user
+logged in to the CLI; anyone with the preview address then shares that access.
+The Swell dashboard shows the deployed build, after `swell app push`.
 
-Run `npm run dev` to start the local development server. Without Swell request context, the catalog cannot load platform data and `/app-api/context` returns an unavailable-context response. The public `/app-api/hello` endpoint can be exercised locally.
+Running `npm run dev` in this folder starts the frontend without Swell. The
+home page then says "Not connected to a store", which is expected.
 
-## Swell integration preview
+Swell signs the context it sends with each request, and the app verifies the
+signature. To skip verification in local development, set
+`SWELL_VERIFY_HEADERS` to `"false"` in `.dev.vars`. `swell app push` excludes
+this file; deployed apps always verify.
 
-For evaluation with a Swell CLI and platform build that support these managed templates, place this directory at `frontend/` inside a Swell app. Add `"hosting": "managed"` to the parent `swell.json` frontend configuration, preserving its other settings:
+## Working patterns
 
-```json
-{ "frontend": { "hosting": "managed" } }
+The home page is a demonstration. Replace it and delete cards you do not need.
+The code and this table are the starting points for extending the app:
+
+| Need | Example |
+| --- | --- |
+| Read the catalog on the server | `components/catalog-card.tsx` |
+| Use the cart in the browser | `components/cart-card.tsx` |
+| Recognize store users and read private Backend data | `components/store-user-card.tsx` |
+| Add a public endpoint or store-user-only POST | `app/app-api/hello/route.ts` |
+| Configure the browser's `swell-js` client | `app/layout.tsx`, `components/swell-provider.tsx` |
+| Display a Swell image | `components/swell-image.tsx` |
+
+`lib/swell.ts` connects the server SDK to the framework. It reads Swell's context
+and verifies it once per request, however many helpers run. The context contains
+credentials: keep it on the server. Only `getPublicConfig()` goes to the browser.
+
+- **Storefront API:** use `getStorefront()` on the server or `useSwell()` in a
+  client component for products, cart, account and checkout. They share the
+  visitor's session cookie. Prefer browser effects and event handlers for cart
+  and account changes; server actions and route handlers can also save cookies,
+  while a page render cannot.
+- **Backend API:** use `getBackend()` on the server. It uses the app's access
+  token, not the viewer's permissions. Authorize the caller before exposing
+  private data. The server chooses the endpoint and query; the browser supplies
+  only the inputs the operation needs.
+- **Store users:** read `context.storeUser` for optional identity or call
+  `requireStoreUser()` from `lib/swell` in a store-user-only route handler or
+  server action. Anyone signed in to the store's dashboard counts, including
+  partners and Swell support. The app decides what each store user may do.
+  Swell's proxy withholds their identity on foreign-origin writes. Pages and GET
+  handlers must not change data.
+
+Put frontend endpoints under `app/app-api`: Swell reserves `/api` and
+`/functions`. The example POST only returns the store user; it changes no data.
+
+`getSwellContext()` returns `null` when no context was supplied. An invalid
+context or verification failure throws; it must not be treated as a visitor.
+The other server helpers require a connection and explain how to start one.
+
+API reference: <https://developers.swell.is>. `@swell/apps-sdk` is the server
+library; `swell-js` is the browser library.
+
+## Check and deploy
+
+```sh
+npm run check     # generate route types, typecheck and build, in this folder
+swell app push    # build and deploy, from the app folder
 ```
 
-The intended workflow is `swell app dev` for development through Swell and `swell app push` for deployment, both from the parent app. The frontend package contains the built Worker, public assets and serving settings. Managed deployment uses Swell's Cloudflare account. Dev/tunnel integration and fresh-template deployment remain pending verification; do not assume these commands work with the currently released CLI.
-
-## Data and endpoints
-
-Use `swell-js` directly for ordinary platform data exchange. The catalog example initializes it using public runtime context from `/app-api/context`; the example does not embed store/environment values during building. Backend API hosts and tokens are not part of public context.
-
-- `/app-api/hello`: public example.
-- `/app-api/context`: public request-time store configuration.
-- `/app-api/admin/product-count`: fixed Backend API read. It validates `_swell_admin_session` through Swell and requires the session to belong to the current store. Its explicit example policy allows any validated staff session for this store to read the catalog count. Add operation-specific user permissions before exposing more privileged data.
-
-The protected example returns only a count. Do not turn it into an unrestricted Backend API proxy. Credentials and sessions must never appear in responses, browser bundles or logs. Use non-GET methods and appropriate CSRF protection when adding cookie-authenticated mutations. Public pages remain accessible without a staff session.
-
-Swell owns `/api`, `/functions`, GraphQL and existing platform paths. Use `/app-api` for frontend handlers. The gateway supplies trusted context in managed hosting; these examples are not an independently authenticated ingress for a self-hosted Worker.
-
-## Assets and platform settings
-
-Use the included `SwellImage` component with a product/content URL from `https://cdn.swell.store`. Use ordinary image tags for bundled files. No Cloudflare Images binding is used.
-
-`public/_headers` marks hashed `/_next/static/*` immutable. Swell preserves browser caching as private; other responses stay no-store. The managed packager excludes sensitive files such as source maps, `.dev.vars`, dependency directories and build/serving configuration. Keep secrets and source files out of `public/`; local preview and direct Cloudflare deployment do not use Swell's packaging checks.
-
-Only `ASSETS` and Vinext's `CF_VERSION_METADATA` with Workers Cache are supported. Swell controls placement, CSP, CORS and cache policy. `/.swell/context` is reserved for the platform's public runtime context, and the `metadata` module name is reserved in packages. Managed runtime logs are not currently exposed; use local development for console debugging.
+Requires Node.js 22.22.2 or newer. Managed hosting is in preview.

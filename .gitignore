@@ -7,3 +7,4 @@
 **/worker-configuration.d.ts
 **/next-env.d.ts
 .verification/
+/TODO.md
