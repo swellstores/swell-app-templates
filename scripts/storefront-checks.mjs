@@ -31,7 +31,7 @@ export async function verifyStorefrontBrowser(browser, origin) {
   const product = { id: 'fixture', slug: 'fixture', name: 'Fixture product', price: 12, stock_status: 'in_stock', active: true };
   const publicHeaders = {
     'Swell-Store-Id': 'fixture', 'Swell-Public-Key': 'fixture-public', 'Swell-Admin-Url': origin,
-    'Swell-Access-Token': 'private-sentinel', 'Swell-Storefront-Id': 'secondary',
+    'Swell-Access-Token': 'private-sentinel',
   };
   const context = await browser.newContext({ extraHTTPHeaders: publicHeaders });
   const page = await context.newPage();
@@ -43,7 +43,6 @@ export async function verifyStorefrontBrowser(browser, origin) {
     const request = route.request();
     const pathname = new URL(request.url()).pathname;
     requests.push(`${request.method()} ${pathname}`);
-    assert.equal(request.headers()['swell-storefront-id'], 'secondary');
     assert.equal(request.headers().authorization, `Basic ${btoa('fixture-public')}`);
     let result;
     if (pathname === '/api/settings/all') {
@@ -65,8 +64,8 @@ export async function verifyStorefrontBrowser(browser, origin) {
   try {
     await page.goto(`${origin}/products/fixture?swellEmbedded=1`);
     await page.getByText('Fixture product', { exact: true }).waitFor();
-    assert.deepEqual(await page.evaluate(async () => (await fetch('/app-api/config')).json()), {
-      storeId: 'fixture', publicKey: 'fixture-public', url: origin, vaultUrl: 'https://vault.schema.io', headers: { 'Swell-Storefront-Id': 'secondary' },
+    assert.deepEqual(await page.evaluate(() => window.__SWELL__), {
+      storeId: 'fixture', publicKey: 'fixture-public', url: origin,
     });
     assert(!(await page.content()).includes('private-sentinel'));
     await page.getByRole('button', { name: 'Add to cart', exact: true }).click();
