@@ -18,7 +18,7 @@ swell app dev
 ```
 
 Open the address it prints. Edits reload in place. This preview opens as a
-visitor. To see staff access, run `swell app push` and open the app from the
+visitor. To see store user access, run `swell app push` and open the app from the
 Swell dashboard, which shows the deployed build.
 
 Running `npm run dev` in this folder starts the frontend without Swell. The
@@ -38,8 +38,8 @@ The code and this table are the starting points for extending the app:
 | --- | --- |
 | Read catalog data on the server | `components/catalog-card.tsx` |
 | Use the visitor's cart in the browser | `components/cart-card.tsx` |
-| Recognize staff and read private Backend data | `components/staff-card.tsx` |
-| Add a public endpoint or staff-only POST | `app/app-api/hello/route.ts` |
+| Recognize store users and read private Backend data | `components/store-user-card.tsx` |
+| Add a public endpoint or store-user-only POST | `app/app-api/hello/route.ts` |
 | Call an endpoint from the browser | `components/api-card.tsx` |
 | Configure the browser's `swell-js` client | `app/layout.tsx`, `components/swell-provider.tsx` |
 | Display a Swell image | `components/swell-image.tsx` |
@@ -57,14 +57,15 @@ credentials: keep it on the server. Only `getPublicConfig()` goes to the browser
   token, not the viewer's permissions. Authorize the caller before exposing
   private data. The server chooses the endpoint and query; the browser supplies
   only the inputs the operation needs.
-- **Staff:** read `context.staff` for optional identity or call `requireStaff()`
-  from `lib/swell` in a staff-only route handler or server action. Any store
-  dashboard user counts, including partners and Swell support. The app decides
-  what each staff member may do. Swell's proxy withholds staff identity on
-  foreign-origin writes. Pages and GET handlers must not change data.
+- **Store users:** read `context.storeUser` for optional identity or call
+  `requireStoreUser()` from `lib/swell` in a store-user-only route handler or
+  server action. Anyone signed in to the store's dashboard counts, including
+  partners and Swell support. The app decides what each store user may do.
+  Swell's proxy withholds their identity on foreign-origin writes. Pages and GET
+  handlers must not change data.
 
 Put frontend endpoints under `app/app-api`: Swell reserves `/api` and
-`/functions`. The example POST only returns staff identity; it changes no data.
+`/functions`. The example POST only returns the store user; it changes no data.
 
 `getSwellContext()` returns `null` when no context was supplied. An invalid
 context or verification failure throws; it must not be treated as a visitor.

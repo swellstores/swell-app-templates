@@ -24,7 +24,7 @@ export default function ApiCard() {
 
   return (
     <Card title="API routes" runs="Route handler · server" file="app/app-api/hello/route.ts">
-      <p>GET is public. POST requires staff and changes no data.</p>
+      <p>GET is public. POST requires a store user and changes no data.</p>
       <div className="mt-3 flex flex-wrap gap-3">
         {(["GET", "POST"] as const).map((method) => (
           <button

@@ -8,7 +8,7 @@
     "vinext": "1.0.0",
     "react-server-dom-webpack": "19.3.0",
     "@vinext/cloudflare": "1.0.0",
-    "@swell/apps-sdk": "2.0.0-alpha.1",
+    "@swell/apps-sdk": "file:../../apps-sdk",
     "swell-js": "5.9.1"
   },
   "devDependencies": {

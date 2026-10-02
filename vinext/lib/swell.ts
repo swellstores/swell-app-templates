@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { cookies, headers } from "next/headers";
-import { getStorefrontConfig, requireStaff as checkStaff, SwellBackendAPI, SwellError, verifySwellContext } from "@swell/apps-sdk";
+import { getStorefrontConfig, requireStoreUser as checkStoreUser, SwellBackendAPI, SwellError, verifySwellContext } from "@swell/apps-sdk";
 import { createStorefrontClient } from "@swell/apps-sdk/storefront";
 
 // Server-only request context, including credentials. Never pass it to the browser.
@@ -50,15 +50,16 @@ export async function getStorefront() {
 }
 
 // Backend API with this app's access token. Authorize the caller before exposing
-// private data; see context.staff in the staff card and requireStaff in the POST.
+// private data; see context.storeUser in the store user card and requireStoreUser
+// in the POST.
 export async function getBackend() {
   return new SwellBackendAPI({ context: await requireContext() });
 }
 
-// For staff-only route handlers or server actions; throws a 401 for visitors.
-// Swell's proxy authenticates staff and withholds staff identity on foreign-origin
-// writes. Any dashboard role counts as staff; the app decides further permissions.
+// For store-user-only route handlers or server actions; throws a 401 for visitors.
+// Swell's proxy authenticates store users and withholds their identity on
+// foreign-origin writes. Any dashboard role counts; the app decides further permissions.
 // Pages and GET handlers must not change data.
-export async function requireStaff() {
-  return checkStaff(await requireContext());
+export async function requireStoreUser() {
+  return checkStoreUser(await requireContext());
 }

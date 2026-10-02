@@ -1,7 +1,7 @@
 import ApiCard from "@/components/api-card";
 import CartCard from "@/components/cart-card";
 import CatalogCard from "@/components/catalog-card";
-import StaffCard from "@/components/staff-card";
+import StoreUserCard from "@/components/store-user-card";
 import { getSwellContext } from "@/lib/swell";
 
 const links = [
@@ -48,7 +48,7 @@ export default async function Home() {
           <div className="grid gap-4 sm:grid-cols-2">
             <CatalogCard />
             <CartCard />
-            <StaffCard />
+            <StoreUserCard />
             <ApiCard />
           </div>
         ) : (
