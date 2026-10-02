@@ -1,4 +1,4 @@
-import ApiDemo from "@/components/api-demo";
+import ApiCard from "@/components/api-card";
 import CartCard from "@/components/cart-card";
 import CatalogCard from "@/components/catalog-card";
 import StaffCard from "@/components/staff-card";
@@ -29,7 +29,7 @@ export default async function Home() {
           {swell ? (
             <>
               <p className="max-w-2xl text-lg leading-8 text-slate-700">
-                Three working patterns for talking to Swell. Each card names its file.
+                Four working patterns for talking to Swell. Each card names its file.
               </p>
               <p className="text-sm text-slate-600">
                 Store <code>{swell.storeId}</code>
@@ -45,20 +45,21 @@ export default async function Home() {
         </div>
 
         {swell ? (
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <CatalogCard />
             <CartCard />
             <StaffCard />
+            <ApiCard />
           </div>
         ) : (
           <code className="block rounded-lg border border-slate-200 bg-white px-5 py-4 text-sm">swell app dev</code>
         )}
 
-        <ApiDemo />
-
-        <p className="text-sm leading-6 text-slate-600">
-          Preview with <code>swell app dev</code> and deploy with <code>swell app push</code>, both from the app folder.
-        </p>
+        {swell && (
+          <p className="text-sm leading-6 text-slate-600">
+            Preview with <code>swell app dev</code> and deploy with <code>swell app push</code>, both from the app folder.
+          </p>
+        )}
 
         <nav className="flex flex-wrap gap-3">
           {links.map((link) => (

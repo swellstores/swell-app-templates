@@ -1,33 +1,35 @@
 import { SwellError } from "@swell/apps-sdk";
 import Card from "@/components/card";
-import { getBackend, getStaff } from "@/lib/swell";
-
-async function loadViewer() {
-  const staff = await getStaff();
-  if (!staff) return { staff: false as const };
-
-  const backend = await getBackend();
-  try {
-    // Works with permissions [] or a list that includes "read_:users" in swell.json.
-    const user = await backend.get<{ name?: string }>(`/:users/${staff.userId}`, { fields: "name" });
-    return { staff: true as const, name: user?.name };
-  } catch (error) {
-    if (error instanceof SwellError && error.status === 403) return { staff: true as const };
-    throw error;
-  }
-}
+import { getBackend, getSwellContext } from "@/lib/swell";
 
 export default async function StaffCard() {
-  const viewer = await loadViewer().catch((error: Error) => error);
+  const staff = (await getSwellContext())?.staff;
+  let name: string | undefined;
+  let message = "";
+
+  // Identity comes from Swell's request context. The optional Backend read below
+  // uses the app's permissions and cannot change whether the viewer is staff.
+  if (staff) {
+    try {
+      const backend = await getBackend();
+      const user = await backend.get<{ name?: string }>(`/:users/${encodeURIComponent(staff.userId)}`, { fields: "name" });
+      name = user?.name;
+    } catch (error) {
+      if (error instanceof SwellError && error.status === 403) {
+        message = "This app has no permission to read your name.";
+      } else {
+        console.error("Staff name lookup failed", error);
+        message = "Your name could not be loaded. Please try again.";
+      }
+    }
+  }
 
   return (
     <Card title="Visitor or staff" runs="Server component · Backend API" file="components/staff-card.tsx">
-      {viewer instanceof Error ? (
-        <p>The staff check could not be completed: {viewer.message}</p>
-      ) : !viewer.staff ? (
-        <p>Visitor. Open this app from the Swell dashboard to be recognized as staff.</p>
+      {staff ? (
+        <p>Staff{name ? `: ${name}` : "."}{message && ` ${message}`}</p>
       ) : (
-        <p>Staff{viewer.name ? `: ${viewer.name}` : ". This app has no permission to read your name."}</p>
+        <p>Visitor. Run <code>swell app push</code>, then open this app from the Swell dashboard to be recognized as staff.</p>
       )}
     </Card>
   );

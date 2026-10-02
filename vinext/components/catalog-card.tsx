@@ -12,12 +12,15 @@ async function loadCatalog() {
 }
 
 export default async function CatalogCard() {
-  const catalog = await loadCatalog().catch((error: Error) => error);
+  const catalog = await loadCatalog().catch((error: unknown) => {
+    console.error("Catalog lookup failed", error);
+    return null;
+  });
 
   return (
     <Card title="Catalog" runs="Server component · Storefront API" file="components/catalog-card.tsx">
-      {catalog instanceof Error ? (
-        <p>The catalog could not be loaded: {catalog.message}</p>
+      {!catalog ? (
+        <p>The catalog could not be loaded. Please try again.</p>
       ) : (
         <>
           <p>

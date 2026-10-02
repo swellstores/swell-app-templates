@@ -1,28 +1,31 @@
+import { cache } from "react";
 import { cookies, headers } from "next/headers";
-import { getStorefrontConfig, parseSwellHeaders, requireStaff, SwellBackendAPI, SwellError } from "@swell/apps-sdk";
+import { getStorefrontConfig, requireStaff as checkStaff, SwellBackendAPI, SwellError, verifySwellContext } from "@swell/apps-sdk";
 import { createStorefrontClient } from "@swell/apps-sdk/storefront";
 
-// Server-side access to Swell. Swell adds the store's context and credentials
-// to every request it sends to this app; these helpers read them per request.
+// Server-only request context, including credentials. Never pass it to the browser.
+// React cache shares verification within a server render, not between requests.
+// No context means plain `npm run dev`; an invalid context still throws.
+export const getSwellContext = cache(async () => {
+  const incoming = await headers();
+  return incoming.get("Swell-Context") === null ? null : verifySwellContext(incoming);
+});
 
-// Store context, or null when the page was opened without Swell (plain `npm run dev`).
-export async function getSwellContext() {
-  const { storeId, appId, environmentId, storefrontId } = parseSwellHeaders(await headers());
-  return storeId ? { storeId, appId, environmentId, storefrontId } : null;
-}
-
-// Swell's request headers, or an error that says how to get them.
-async function swellHeaders() {
-  const swell = await headers();
-  if (!swell.get("Swell-Store-Id")) {
-    throw new Error("Not connected to a store. Run `swell app dev` from the app folder and open the address it prints.");
+async function requireContext() {
+  const context = await getSwellContext();
+  if (!context) {
+    throw new SwellError("Not connected to a store. Run `swell app dev` from the app folder and open the address it prints.", {
+      status: 401,
+      code: "invalid_swell_context",
+    });
   }
-  return swell;
+  return context;
 }
 
-// Public store settings for swell-js in the browser, or null when not connected.
+// Only this public projection may be passed to swell-js in the browser.
 export async function getPublicConfig() {
-  return (await getSwellContext()) ? getStorefrontConfig(await headers()) : null;
+  const context = await getSwellContext();
+  return context ? getStorefrontConfig(context) : null;
 }
 
 // Storefront API client on the visitor's session: products, cart, account.
@@ -30,8 +33,9 @@ export async function getPublicConfig() {
 // server actions save it; a page cannot set cookies while it renders, so there
 // the write is skipped and the browser keeps the session it has.
 export async function getStorefront() {
+  const config = getStorefrontConfig(await requireContext());
   const jar = await cookies();
-  return createStorefrontClient(getStorefrontConfig(await swellHeaders()), {
+  return createStorefrontClient(config, {
     cookies: {
       get: (name) => jar.get(name)?.value,
       set: (name, value, options) => {
@@ -45,40 +49,16 @@ export async function getStorefront() {
   });
 }
 
-// Backend API client with this app's access token. Its data is not public:
-// check who is asking (getStaff, requireStaffRequest) before returning any of it.
+// Backend API with this app's access token. Authorize the caller before exposing
+// private data; see context.staff in the staff card and requireStaff in the POST.
 export async function getBackend() {
-  return new SwellBackendAPI({ headers: await swellHeaders() });
+  return new SwellBackendAPI({ context: await requireContext() });
 }
 
-// The staff member viewing a page in the Swell dashboard, or null for a visitor.
-// For reads in pages only. Anything that changes data goes through a route
-// handler and requireStaffRequest.
-export async function getStaff() {
-  const jar = await cookies();
-  if (!jar.has("_swell_admin_session")) return null;
-  try {
-    return await requireStaff({
-      headers: await headers(),
-      method: "GET",
-      origin: "", // Checked for writes only; see requireStaffRequest.
-      cookies: { get: (name) => jar.get(name)?.value },
-    });
-  } catch (error) {
-    if (error instanceof SwellError && error.status === 401) return null;
-    throw error;
-  }
-}
-
-// Staff check for route handlers under /app-api. Throws a SwellError with status
-// 401 when the caller is not staff of this store, and 403 when a request that
-// changes data did not come from this app's own pages.
-export async function requireStaffRequest(request: Request) {
-  const jar = await cookies();
-  return requireStaff({
-    headers: request.headers,
-    method: request.method,
-    origin: new URL(request.url).origin,
-    cookies: { get: (name) => jar.get(name)?.value },
-  });
+// For staff-only route handlers or server actions; throws a 401 for visitors.
+// Swell's proxy authenticates staff and withholds staff identity on foreign-origin
+// writes. Any dashboard role counts as staff; the app decides further permissions.
+// Pages and GET handlers must not change data.
+export async function requireStaff() {
+  return checkStaff(await requireContext());
 }
