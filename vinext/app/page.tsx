@@ -1,4 +1,3 @@
-import ApiCard from "@/components/api-card";
 import CartCard from "@/components/cart-card";
 import CatalogCard from "@/components/catalog-card";
 import StoreUserCard from "@/components/store-user-card";
@@ -15,6 +14,9 @@ const links = [
   },
 ];
 
+// Commands, paths and ids inside a sentence.
+const chip = "whitespace-nowrap rounded bg-slate-900/5 px-1.5 py-0.5 text-[0.85em]";
+
 export default async function Home() {
   const swell = await getSwellContext();
 
@@ -27,29 +29,24 @@ export default async function Home() {
             {swell ? "Your Swell app is connected." : "Not connected to a store."}
           </h1>
           {swell ? (
-            <>
-              <p className="max-w-2xl text-lg leading-8 text-slate-700">
-                Four working patterns for talking to Swell. Each card names its file.
-              </p>
-              <p className="text-sm text-slate-600">
-                Store <code>{swell.storeId}</code>
-                {swell.environmentId && ` · ${swell.environmentId} environment`}
-              </p>
-            </>
+            <p className="max-w-2xl text-lg leading-8 text-slate-700">
+              Live data from store <code className={chip}>{swell.storeId}</code>
+              {swell.environmentId && ` (${swell.environmentId} environment)`}. Each card shows something the app already
+              does and names the file to copy from.
+            </p>
           ) : (
             <p className="max-w-2xl text-lg leading-8 text-slate-700">
               This page was opened without Swell, so it has no store to talk to. Run the command below from the app
-              folder, one level above <code>frontend</code>, and open the address it prints.
+              folder, one level above <code className={chip}>frontend</code>, and open the address it prints.
             </p>
           )}
         </div>
 
         {swell ? (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-3">
             <CatalogCard />
             <CartCard />
             <StoreUserCard />
-            <ApiCard />
           </div>
         ) : (
           <code className="block rounded-lg border border-slate-200 bg-white px-5 py-4 text-sm">swell app dev</code>
@@ -57,7 +54,8 @@ export default async function Home() {
 
         {swell && (
           <p className="text-sm leading-6 text-slate-600">
-            Preview with <code>swell app dev</code> and deploy with <code>swell app push</code>, both from the app folder.
+            Start in <code className={chip}>app/page.tsx</code>. Preview with <code className={chip}>swell app dev</code>{" "}
+            and deploy with <code className={chip}>swell app push</code>, both from the app folder.
           </p>
         )}
 
@@ -73,6 +71,14 @@ export default async function Home() {
               {link.label}
             </a>
           ))}
+          {/* Opens in a new tab: the Swell dashboard shows this app in a frame. */}
+          <a
+            className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-100"
+            href="/app-api/hello"
+            target="_blank"
+          >
+            API route <code className="ml-1 font-normal text-slate-500">/app-api/hello</code>
+          </a>
         </nav>
       </section>
     </main>

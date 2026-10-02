@@ -48,18 +48,22 @@ export default function CartCard() {
   }
 
   return (
-    <Card title="Cart" runs="Client component · swell-js" file="components/cart-card.tsx">
+    <Card title="Use the cart" file="components/cart-card.tsx">
       <p className="flex items-center gap-2">
-        Items in this visitor's cart
-        <span className="rounded-full bg-orange-600 px-2.5 py-0.5 text-sm font-semibold text-white">{count ?? "…"}</span>
+        Items in this browser's cart
+        <span
+          className={`rounded-full bg-orange-600 px-2.5 py-0.5 text-sm font-semibold text-white ${count === null && !message ? "animate-pulse" : ""}`}
+        >
+          {count ?? "…"}
+        </span>
       </p>
       <button
-        className="mt-3 rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-950 hover:bg-slate-100 disabled:cursor-wait disabled:opacity-60"
+        className="mt-3 w-full rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-950 hover:bg-slate-100 disabled:cursor-wait disabled:opacity-60"
         disabled={pending}
         onClick={addItem}
         type="button"
       >
-        Add an item
+        Add to cart
       </button>
       {message && <p className="mt-3">{message}</p>}
     </Card>

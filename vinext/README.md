@@ -18,8 +18,9 @@ swell app dev
 ```
 
 Open the address it prints. Edits reload in place. This preview opens as a
-visitor. To see store user access, run `swell app push` and open the app from the
-Swell dashboard, which shows the deployed build.
+visitor. Run `swell app dev --store-user` to be recognized as the store user
+logged in to the CLI; anyone with the preview address then shares that access.
+The Swell dashboard shows the deployed build, after `swell app push`.
 
 Running `npm run dev` in this folder starts the frontend without Swell. The
 home page then says "Not connected to a store", which is expected.
@@ -36,11 +37,10 @@ The code and this table are the starting points for extending the app:
 
 | Need | Example |
 | --- | --- |
-| Read catalog data on the server | `components/catalog-card.tsx` |
-| Use the visitor's cart in the browser | `components/cart-card.tsx` |
+| Read the catalog on the server | `components/catalog-card.tsx` |
+| Use the cart in the browser | `components/cart-card.tsx` |
 | Recognize store users and read private Backend data | `components/store-user-card.tsx` |
 | Add a public endpoint or store-user-only POST | `app/app-api/hello/route.ts` |
-| Call an endpoint from the browser | `components/api-card.tsx` |
 | Configure the browser's `swell-js` client | `app/layout.tsx`, `components/swell-provider.tsx` |
 | Display a Swell image | `components/swell-image.tsx` |
 

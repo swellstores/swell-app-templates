@@ -25,11 +25,23 @@ export default async function StoreUserCard() {
   }
 
   return (
-    <Card title="Visitor or store user" runs="Server component · Backend API" file="components/store-user-card.tsx">
+    <Card title="Recognize store users" file="components/store-user-card.tsx">
       {storeUser ? (
-        <p>Store user{name ? `: ${name}` : "."}{message && ` ${message}`}</p>
+        <p>
+          You are viewing as {name ? "" : "a "}
+          <span className="font-medium text-slate-950">{name ? `store user ${name}` : "store user"}</span>.
+          {message && ` ${message}`}
+        </p>
       ) : (
-        <p>Visitor. Run <code>swell app push</code>, then open this app from the Swell dashboard to be recognized as a store user.</p>
+        <>
+          <p>
+            You are viewing as a <span className="font-medium text-slate-950">visitor</span>.
+          </p>
+          <p className="mt-2">
+            Run <code className="whitespace-nowrap rounded bg-slate-900/5 px-1.5 py-0.5 text-[0.85em]">swell app dev --store-user</code>{" "}
+            to view it the way it opens inside the Swell dashboard.
+          </p>
+        </>
       )}
     </Card>
   );
