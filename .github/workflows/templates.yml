@@ -22,5 +22,11 @@ jobs:
         with:
           bun-version: '1.3.14'
       - run: npm ci
+      - name: Install published CLI for managed-package capture
+        if: matrix.template != 'react-storefront'
+        run: npm install --prefix .verification/cli --no-save --package-lock=false @swell/cli@2.9.21
       - run: npx playwright install --with-deps chromium
+      # React and Vinext verify the shipped template, including its store-user POST, against a signed-context mock platform.
       - run: npm run verify -- ${{ matrix.template }}
+        env:
+          SWELL_CLI_PACKAGE_MODULE: ${{ github.workspace }}/.verification/cli/node_modules/@swell/cli/dist/lib/apps/frontend-package.js

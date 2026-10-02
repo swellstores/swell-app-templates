@@ -17,8 +17,11 @@ function App() {
   useEffect(() => {
     fetch('/app-api/config')
       .then(async (response) => {
-        const body = await response.json()
-        if (!response.ok) throw new Error(body.error)
+        // An answer from in front of the Worker may not be JSON or carry a message.
+        const body = await response.json().catch(() => undefined)
+        if (!response.ok || body === undefined) {
+          throw new Error(typeof body?.error === 'string' ? body.error : `/app-api/config gave an unexpected answer (status ${response.status}).`)
+        }
         setConfig(body)
       })
       .catch((error: Error) => setError(error.message))

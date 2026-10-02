@@ -6,9 +6,15 @@ export default function SwellImage({
   width,
   height,
 }: Readonly<{ src: string; alt: string; width: number; height?: number }>) {
-  const url = URL.parse(src)
-  // Twice the displayed size, for high-density screens.
-  url?.searchParams.set('width', String(width * 2))
-  if (height) url?.searchParams.set('height', String(height * 2))
-  return <img src={url?.href ?? src} alt={alt} width={width} height={height} loading="lazy" />
+  let sized = src
+  try {
+    const url = new URL(src)
+    // Twice the displayed size, for high-density screens.
+    url.searchParams.set('width', String(width * 2))
+    if (height) url.searchParams.set('height', String(height * 2))
+    sized = url.href
+  } catch {
+    // Not an absolute URL: use it as it is.
+  }
+  return <img src={sized} alt={alt} width={width} height={height} loading="lazy" />
 }

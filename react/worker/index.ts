@@ -12,6 +12,7 @@ const routes: [method: string, pathname: string, handler: Handler][] = [
   ['GET', '/app-api/hello', getHello],
   ['POST', '/app-api/hello', postHello],
 ]
+const patterns = routes.map(([method, pathname, handler]) => ({ method, handler, pattern: new URLPattern({ pathname }) }))
 
 // Only this public projection of the context goes to the browser, for swell-js.
 // null means the app was opened without Swell.
@@ -58,8 +59,8 @@ export default {
     const url = new URL(request.url)
     if (!url.pathname.startsWith('/app-api/')) return env.ASSETS.fetch(request)
 
-    const matches = routes.flatMap(([method, pathname, handler]) => {
-      const match = new URLPattern({ pathname }).exec(url)
+    const matches = patterns.flatMap(({ method, handler, pattern }) => {
+      const match = pattern.exec(url)
       return match ? [{ method, handler, params: match.pathname.groups }] : []
     })
     if (matches.length === 0) return json({ error: 'Not found' }, 404)

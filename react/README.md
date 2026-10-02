@@ -76,7 +76,9 @@ Code under `src/` cannot use `@swell/apps-sdk`: the build fails when browser
 code imports it, directly or through a file in `worker/`.
 
 API reference: <https://developers.swell.is>. `@swell/apps-sdk` is the server
-library; `swell-js` is the browser library.
+library; `swell-js` is the browser library. The SDK's README, installed under
+`node_modules/@swell/apps-sdk`, covers the rest of the Backend client: app
+settings (`backend.settings()`), function calls, transactions and workflows.
 
 ## Check and deploy
 

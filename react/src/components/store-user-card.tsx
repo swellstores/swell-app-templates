@@ -22,7 +22,7 @@ export default function StoreUserCard() {
   const name = result?.storeUser?.name
 
   return (
-    <Card title="Recognize store users" file="src/components/store-user-card.tsx">
+    <Card title="Recognize store users" file="worker/index.ts">
       {result === undefined ? (
         <p>Checking who is viewing…</p>
       ) : !result ? (
