@@ -30,7 +30,7 @@ The scaffold uses Wrangler mode with CDN/data caches, image optimization,
 prerendering and cache warming disabled. These are generator options, not patches.
 The complete changes to the generated tree are:
 
-- `package.json`: name `frontend` and template version `0.1.4` for CLI scaffolding;
+- `package.json`: name `frontend` and template version `0.1.5` for CLI scaffolding;
   exact direct dependency versions and an npm lockfile for reproducible installs;
   Node `>=22.22.2` for the qualified toolchain. Remove the generator's npm-only
   `packageManager` declaration so Corepack permits the CLI-selected Yarn manager.
@@ -87,7 +87,7 @@ The base is C3's `react-ts` scaffold, preserved in the `init` commit. A fresh
 scaffold with C3 2.73.2 and `create-vite` 9.2.1 on 2026-10-02 has the same source
 files; only dependency ranges moved. The complete changes to the generated tree are:
 
-- `package.json`: name `frontend` and template version `0.1.3` for CLI scaffolding;
+- `package.json`: name `frontend` and template version `0.1.4` for CLI scaffolding;
   exact direct dependency versions and an npm lockfile for reproducible installs;
   Node `>=22.22.2`. Vite, `@cloudflare/vite-plugin` and Wrangler use the versions
   Vinext is qualified on, so both templates build with one Workers toolchain.
