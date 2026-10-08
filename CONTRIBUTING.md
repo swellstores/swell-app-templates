@@ -58,7 +58,7 @@ The complete changes to the generated tree are:
 The generated Vinext `_headers` comment and immutable static-asset rule are
 accepted unchanged by backend admission. The backend replaces the beta profile:
 cache-on packages and `CF_VERSION_METADATA` are rejected. C3 2.72.7 remote template
-mode must still be qualified from a pushed candidate branch before moving `v0.1`;
+mode must still be qualified from a pushed candidate branch before moving the release tag;
 the local-template CLI override and finalizer simulation do not qualify it.
 
 ## Vinext: the Swell layer
@@ -141,7 +141,7 @@ it minimal: one way to do each thing.
 
 ## Fresh scaffold qualification
 
-The Swell CLI scaffolds from the moving `v0.1` compatibility tag of this repository. degit resolves only branch and tag tips, never arbitrary commits, so qualify a candidate from a pushed branch before moving the tag:
+The Swell CLI scaffolds from a moving compatibility tag of this repository, named by `FRONTEND_TEMPLATE_REF` in the CLI. degit resolves only branch and tag tips, never arbitrary commits, so qualify a candidate from a pushed branch before moving the tag:
 
 ```sh
 npm create cloudflare@2.72.7 -- frontend --template=swellstores/swell-app-templates/react#<BRANCH> --deploy=false --git=false --no-agents --no-auto-update
@@ -161,10 +161,10 @@ Review Cloudflare/C3, framework and dependency updates weekly. Aim for monthly r
 
 ## Releases
 
-The Swell CLI pins C3 and references the `v0.1` tag. A patch release moves that tag, so template hotfixes need no CLI release. A breaking template change gets the next minor tag and a CLI release that updates `FRONTEND_TEMPLATE_REF` to it.
+The Swell CLI pins C3 and references the tag named by its `FRONTEND_TEMPLATE_REF`. A patch release moves that tag, so template hotfixes need no CLI release. A breaking template change gets the next minor tag and a CLI release that updates `FRONTEND_TEMPLATE_REF` to it.
 
 1. Update exact dependencies and lockfiles, and bump each template's `version`.
 2. Run `npm run sync` from the repository root. Each finalizer restores `scripts/managed-manifest.json` and `scripts/managed-wrangler.jsonc`, which are byte copies of the template's committed `package.json` and `wrangler.jsonc`; `npm run verify` fails while those snapshots are stale.
 3. Run `npm run verify`, then qualify fresh scaffolds as described above.
-4. Commit and push, then move the tag for a patch (`git tag -f v0.1 && git push --force origin v0.1`) or create the next minor tag.
+4. Commit and push, then move the tag for a patch (`git tag -f <TAG> && git push --force origin <TAG>`) or create the next minor tag.
 5. Rerun the CLI's `npm run test:frontend-scaffolds` against the tag.
