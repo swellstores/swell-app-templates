@@ -1,7 +1,7 @@
 {
   "name": "frontend",
   "private": true,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,10 +14,10 @@
     "prepare:managed": "node scripts/prepare-managed.mjs"
   },
   "dependencies": {
-    "@swell/apps-sdk": "2.0.0-alpha.4",
+    "@swell/apps-sdk": "2.0.0-alpha.5",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "swell-js": "5.9.1"
+    "swell-js": "5.9.2"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.62.2",
