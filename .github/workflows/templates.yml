@@ -7,7 +7,9 @@ permissions:
   contents: read
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    # ubuntu-latest is Ubuntu 26 since 2026-10-19; its apt mirrors fail
+    # `playwright install --with-deps` (amd64v3 packages not found)
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         template: [react, vinext, react-storefront]
