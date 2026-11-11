@@ -25,7 +25,9 @@ jobs:
       - name: Install published CLI for managed-package capture
         if: matrix.template != 'react-storefront'
         run: npm install --prefix .verification/cli --no-save --package-lock=false @swell/cli@2.9.21
-      - run: npx playwright install --with-deps chromium
+      # The runner image already has Chrome's system libraries; --with-deps would add
+      # an apt install, which fails whenever the runner can't reach the Ubuntu mirrors
+      - run: npx playwright install chromium
       # React and Vinext verify the shipped template, including its store-user POST, against a signed-context mock platform.
       - run: npm run verify -- ${{ matrix.template }}
         env:
