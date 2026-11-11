@@ -129,6 +129,8 @@ There is no separate `useProductList`. Generated code must not call
 - `useCart()`
 - `useCurrency()`
 - `useLocale()`
+- `useConsent()`: passes the shopper's answers from a cookie banner or consent tool to
+  Swell for ad attribution; it has no UI and no loading state
 
 All asynchronous entity hooks use the same status fields: `error`, `isLoading`,
 `isFetching`, and `refetch`.
