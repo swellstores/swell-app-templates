@@ -85,6 +85,10 @@ With a compatible Swell CLI and platform build, deploy using `swell app push` fr
 
 Swell retains `/api` and its other platform routes. This template does not provide custom backend handlers. Add storefront features through the browser commerce hooks; do not add Backend API credentials or an application API layer.
 
+## Consent and ad attribution
+
+When the merchant turns on ad attribution, Swell records ad clicks and UTM tags on this storefront's pages by itself. The storefront only passes on the shopper's consent: call `setConsent` from `useConsent()` (`@/hooks`) in the store's cookie banner or in its consent tool's callback. In regions where tracking needs consent, Swell records nothing until it gets an answer. The template shows no banner and does not control ad pixels.
+
 ## Assets and verification
 
 The build emits no source maps. `public/_headers` marks hashed `/assets/*` immutable; Swell retains private browser caching while HTML containing store configuration stays no-store. Keep private files out of `public/`. Only the `ASSETS` binding is used, with no Cloudflare Images or other service bindings. `/.swell/context` is reserved for the platform's public runtime context, and the `metadata` module name is reserved in packages. Swell controls CSP, CORS and cache policy.

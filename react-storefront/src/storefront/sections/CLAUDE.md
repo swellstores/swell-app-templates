@@ -38,6 +38,7 @@ Each section owns the data source it needs.
 - Use `useCart()` for cart triggers, cart drawers, cart lines, summaries, and checkout sections.
 - Use `useMenu(id)` or `useMenus()` for navigation sections.
 - Use `useCurrency()` and `useLocale()` for localization controls.
+- Use `useConsent()` in a cookie banner section, or in the callback of the store's consent tool, to pass the shopper's answers to Swell.
 
 Sections may receive a slug or id from a page, derive it from route context, or use a fixed featured entity chosen during generation.
 

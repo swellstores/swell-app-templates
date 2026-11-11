@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { EnabledCurrency, Locale } from "swell-js";
+import type { Consent, ConsentInput, EnabledCurrency, Locale } from "swell-js";
 
 import { initializeSwell, readSwellConfig, swell, type SwellConfig } from "./client";
 import { normalizeMenus, type ResolvedMenu } from "./menu";
@@ -29,6 +29,7 @@ interface StorefrontContextValue extends StorefrontState {
   refresh: () => Promise<void>;
   setCurrency: (code: string) => Promise<void>;
   setLocale: (code: string) => Promise<void>;
+  setConsent: (choice: ConsentInput) => Promise<Consent | null>;
 }
 
 const StorefrontContext = createContext<StorefrontContextValue | null>(null);
@@ -125,6 +126,22 @@ export function StorefrontProvider({ children, config }: StorefrontProviderProps
     }));
   }, []);
 
+  const setConsent = useCallback(
+    async (choice: ConsentInput) => {
+      if (!resolvedConfig) return null;
+
+      // A consent tool may answer before this provider's effect has run
+      initializeSwell(resolvedConfig);
+      return swell.consent.set(choice);
+    },
+    [
+      resolvedConfig?.publicKey,
+      resolvedConfig?.storeId,
+      resolvedConfig?.url,
+      resolvedConfig?.vaultUrl,
+    ],
+  );
+
   const value = useMemo<StorefrontContextValue>(
     () => ({
       ...state,
@@ -132,8 +149,9 @@ export function StorefrontProvider({ children, config }: StorefrontProviderProps
       refresh,
       setCurrency,
       setLocale,
+      setConsent,
     }),
-    [refresh, setCurrency, setLocale, state],
+    [refresh, setConsent, setCurrency, setLocale, state],
   );
 
   return <StorefrontContext.Provider value={value}>{children}</StorefrontContext.Provider>;

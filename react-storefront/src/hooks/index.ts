@@ -1,6 +1,7 @@
 export { useCart, type CartLine, type UseCartResult } from "./useCart";
 export { useCategories, type UseCategoriesResult } from "./useCategories";
 export { useCategory, type UseCategoryResult } from "./useCategory";
+export { useConsent, type UseConsentResult } from "./useConsent";
 export { useCurrency, type UseCurrencyResult } from "./useCurrency";
 export { useLocale, type UseLocaleResult } from "./useLocale";
 export { useMenu, useMenus } from "./useMenu";
