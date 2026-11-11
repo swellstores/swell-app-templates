@@ -6,7 +6,7 @@
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "vinext": "1.0.0",
-    "react-server-dom-webpack": "19.3.0",
+    "react-server-dom-webpack": "19.3.1",
     "@vinext/cloudflare": "1.0.0",
     "@swell/apps-sdk": "2.0.0-alpha.5",
     "swell-js": "5.9.2"
