@@ -45,7 +45,8 @@ The complete changes to the generated tree are:
   `swell-vinext`, compatibility date `2026-09-08`, and empty compatibility flags.
   Swell's package admission requires the Wrangler defaults `html_handling:
   auto-trailing-slash` and `run_worker_first: false`. The upstream generator
-  sets `html_handling: none` and a list of `run_worker_first` routes.
+  sets `html_handling: none` and a list of `run_worker_first` routes. A leading
+  comment tells the app developer the profile is fixed.
 - `vite.config.ts`: allow Swell's `.trycloudflare.com`, `.swell.store` and
   `.swell.test` tunnel hosts.
 - Move `app/api/hello` to `app/app-api/hello` because Swell owns `/api`.
