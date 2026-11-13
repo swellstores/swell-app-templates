@@ -143,9 +143,12 @@ for (const name of templates) {
       .filter((block) => block.headers.some((header) => /^cache-control:.*\bimmutable\b/i.test(header)))
       .map((block) => block.path);
     assert(immutableRules.length > 0, '_headers must set an immutable Cache-Control rule');
+    const hashedJs = name === 'vinext'
+      ? /^\/_next\/static\/chunks\/[A-Za-z0-9_-]{8}\.js$/
+      : /-[A-Za-z0-9_-]{6,}\.js$/;
     const hashedAssets = (await fs.readdir(assetsDir, { recursive: true }))
       .map((file) => `/${file.split(path.sep).join('/')}`)
-      .filter((file) => /-[A-Za-z0-9_-]{6,}\.js$/.test(file));
+      .filter((file) => hashedJs.test(file));
     assert(hashedAssets.length > 0, 'build must emit hashed JS assets');
     assert(
       hashedAssets.some((asset) => immutableRules.some((rule) => (rule.endsWith('*') ? asset.startsWith(rule.slice(0, -1)) : rule === asset))),

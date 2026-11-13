@@ -4,9 +4,11 @@ Keep each template independently usable. Do not add runtime imports from the rep
 
 ## Upstream provenance
 
-`upstream.json` records the original generator versions and source revisions. Its `scaffoldCommand` entries use `frontend` as an example destination directory. The `init` commit preserves the original React scaffold. Vinext was restarted from `create-vinext-app@1.0.0`; regenerate with its recorded command to compare with upstream. The storefront starter is imported from the source revision recorded under `react-storefront`.
+`upstream.json` records the generator versions and source revisions. Its `scaffoldCommand` entries use `frontend` as an example destination directory. The `init` commit preserves the original React scaffold. Regenerate Vinext with its recorded `create-vinext-app` command to compare with upstream. The storefront starter is imported from the source revision recorded under `react-storefront`.
 
-C3 is a scaffolding tool, not a dependency of the generated apps. The managed-template procedure currently uses C3 **2.72.7** with automatic updates disabled. Update the tested generator version and the Swell CLI invocation together when qualifying a new release.
+The top-level `createCloudflare` field records the C3 version used for the
+original React scaffold. The Swell CLI pins the C3 version for managed template
+creation in `C3_VERSION` and disables automatic updates.
 
 ## Managed template verification
 
@@ -24,23 +26,26 @@ This checks `react`, `vinext` and `react-storefront`. To select one, pass its di
 
 The checks copy the template to an isolated directory, install its lockfile, simulate C3 configuration changes, run the finalizer, check types and the available lint/tests scripts, build, and exercise the local Worker and browser. Vinext has no lint or test script; its checks are typechecking, building, package capture and the local Worker and browser. React runs its `check` script (lint, typecheck and build) and has no test script. For React and Vinext, capture checks the shipped template: cache off and only `ASSETS`, no local variables file, and for Vinext the retained SSR modules. Their runtime checks share one mock platform (`scripts/mock-platform.mjs`) and use a local signing key and JWKS service with signature verification enabled, plus mock Storefront and Backend APIs. They cover no context, first and returning visitor sessions, a store user with and without permission to read the user, a failing name lookup, a failing Storefront API, invalid signatures, expired context, concurrent store isolation, and the shipped store-user-only POST. The React scenario runs the same cases through its Worker endpoints and in Chromium, where the catalog and cart are read with `swell-js`. Foreign-origin writes are represented by the visitor context the platform supplies; these checks do not test the proxy's origin enforcement. Chromium adds an item through `swell-js`, reloads, and checks that the same session is used afterwards: by the server render in Vinext, by the browser in React. Generated packages and the result summary are written under `.verification/`. Capture requires a built sibling `swell-cli` checkout; set `SWELL_CLI_PACKAGE_MODULE` to the absolute path of another built CLI's `dist/lib/apps/frontend-package.js` to use it instead. Platform responses are mocked. These checks do not establish real Swell session, tunnel or managed deployment behavior. The GitHub Actions workflow runs the same checks using the public npm package `@swell/cli@2.9.21` for capture. It requires no private repository credentials or temporary source branch. Local verification can continue to use the built sibling checkout; qualify a new published CLI version before changing the CI pin.
 
-## Vinext 1.0.0 base: deviations from upstream
+## Deviations from the Vinext 1.4.5 scaffold
 
 The scaffold uses Wrangler mode with CDN/data caches, image optimization,
 prerendering and cache warming disabled. These are generator options, not patches.
 The complete changes to the generated tree are:
 
-- `package.json`: name `frontend` and template version `0.1.5` for CLI scaffolding;
-  exact direct dependency versions and an npm lockfile for reproducible installs;
-  Node `>=22.22.2` for the qualified toolchain. Remove the generator's npm-only
-  `packageManager` declaration so Corepack permits the CLI-selected Yarn manager.
+- `package.json` uses the name `frontend` and the template version for CLI
+  scaffolding. Exact direct dependency versions and the npm lockfile make
+  installs reproducible. The qualified toolchain requires Node `>=22.22.2`.
+  The manifest omits the generator's npm-only `packageManager` declaration so
+  Corepack permits the CLI-selected Yarn manager.
 - Scripts: remove direct Cloudflare `deploy`, since Swell owns deployment; add
   `preview`, `cf-typegen`, `typecheck` and the one-shot `prepare:managed` expected
   by local qualification and CLI scaffolding. Upstream `dev`, `build` and `start`
   remain unchanged. No lint or test framework is added to the base.
-- `wrangler.jsonc`: Worker name `swell-vinext`, qualified date `2026-09-08` and
-  empty compatibility flags, and a leading comment that tells the app developer
-  the profile is fixed. Everything else is upstream's ASSETS-only config.
+- `wrangler.jsonc` uses the managed `ASSETS`-only profile with Worker name
+  `swell-vinext`, compatibility date `2026-09-08`, and empty compatibility flags.
+  Swell's package admission requires the Wrangler defaults `html_handling:
+  auto-trailing-slash` and `run_worker_first: false`. The upstream generator
+  sets `html_handling: none` and a list of `run_worker_first` routes.
 - `vite.config.ts`: allow Swell's `.trycloudflare.com`, `.swell.store` and
   `.swell.test` tunnel hosts.
 - Move `app/api/hello` to `app/app-api/hello` because Swell owns `/api`.
@@ -57,7 +62,7 @@ The complete changes to the generated tree are:
 
 The generated Vinext `_headers` comment and immutable static-asset rule are
 accepted unchanged by backend admission. The backend replaces the beta profile:
-cache-on packages and `CF_VERSION_METADATA` are rejected. C3 2.72.7 remote template
+cache-on packages and `CF_VERSION_METADATA` are rejected. C3 remote template
 mode must still be qualified from a pushed candidate branch before moving the release tag;
 the local-template CLI override and finalizer simulation do not qualify it.
 
@@ -141,10 +146,10 @@ it minimal: one way to do each thing.
 
 ## Fresh scaffold qualification
 
-The Swell CLI scaffolds from a moving compatibility tag of this repository, named by `FRONTEND_TEMPLATE_REF` in the CLI. degit resolves only branch and tag tips, never arbitrary commits, so qualify a candidate from a pushed branch before moving the tag:
+The Swell CLI scaffolds from a moving compatibility tag of this repository, named by `FRONTEND_TEMPLATE_REF` in the CLI. degit resolves only branch and tag tips, so qualify a candidate from a pushed branch before moving the tag. Use the C3 version pinned by the CLI release that will scaffold the template.
 
 ```sh
-npm create cloudflare@2.72.7 -- frontend --template=swellstores/swell-app-templates/react#<BRANCH> --deploy=false --git=false --no-agents --no-auto-update
+npm create "cloudflare@$C3_VERSION" -- frontend --template="swellstores/swell-app-templates/react#$CANDIDATE_BRANCH" --deploy=false --git=false --no-agents --no-auto-update --lang=ts
 ```
 
 Replace `react` with `vinext` or `react-storefront` to qualify another template. Use Bun for the storefront install and scripts as described in its README. In the generated directory, run `npm run prepare:managed` once before installing dependencies and generating types. C3 changes configuration, scripts and some dependency versions; the finalizer restores the committed manifest, including the template's package name, and restores `wrangler.jsonc` byte for byte. It then removes `prepare:managed` from the manifest and deletes itself and both snapshots, removing `scripts/` only if empty. The Swell CLI already performs this step during scaffolding. Follow the template README for the remaining checks.
